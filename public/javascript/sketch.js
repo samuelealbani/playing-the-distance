@@ -3,6 +3,16 @@
 osc.open(); // connect by default to ws://localhost:8080
  */
 
+let freqCarr = 440;
+let tremoloFreq = 442;
+let harm2freq = 660;
+let harm3freq = 880;
+
+let freqCarrEnergy;
+let tremFreqEnergy;
+let harm2Energy;
+let harm3Energy;
+
 let oscillator, fft, mic;
 
 let audioStarted = false;
@@ -49,7 +59,7 @@ function setup() {
 
   oscillator = new p5.Oscillator(); // set frequency and type
   oscillator.amp(1.0);
-  oscillator.freq(220);
+  oscillator.freq(660);
 
   mic = new p5.AudioIn();
   mic.start();
@@ -69,19 +79,59 @@ function touchStarted() {
 
 //we are using p5.js to visualise this movement data
 function draw() {
+  background(255);
 
 
-  let totalMovement = Math.abs(accX) + Math.abs(accY) + Math.abs(accZ);//movement in any direction
+  leftToRight = abs(leftToRight.toFixed(2));
+  let amplitude = map(leftToRight, 0.0, 90.0, 0.9, 0.1);
+  fill(0);
+  textSize(15);
+  text(leftToRight, 300, 40);
+
+  oscillator.amp(amplitude);
+
+  fft.analyze();
+
+  freqCarrEnergy = fft.getEnergy(freqCarr, freqCarr);
+  tremFreqEnergy = fft.getEnergy(tremoloFreq, tremoloFreq);
+  harm2Energy = fft.getEnergy(harm2freq, harm2freq);
+  harm3Energy = fft.getEnergy(harm3freq, harm3freq);
+  fill(255, 0, 0);
+  textSize(24)
+  textAlign(LEFT, TOP);
+  text(freqCarr + ' Hz: ' + freqCarrEnergy, 50, 50);
+  text(tremoloFreq + ' Hz: ' + tremFreqEnergy, 50, 80);
+  text(harm2freq + ' Hz: ' + harm2Energy, 50, 110);
+  text(harm3freq + ' Hz: ' + harm3Energy, 50, 140);
+
+  const maxWidth = 100;
+  const xVueMeters = 180;
+  stroke(0);
+  noFill();
+  rect(xVueMeters, 50, maxWidth, 20);
+  rect(xVueMeters, 80, maxWidth, 20);
+  rect(xVueMeters, 110, maxWidth, 20);
+  rect(xVueMeters, 140, maxWidth, 20);
+  fill(0);
+
+  rect(xVueMeters, 50, map(freqCarrEnergy, 0, 255, 0, maxWidth), 20);
+  rect(xVueMeters, 80, map(tremFreqEnergy, 0, 255, 0, maxWidth), 20);
+  rect(xVueMeters, 110, map(harm2Energy, 0, 255, 0, maxWidth), 20);
+  rect(xVueMeters, 140, map(harm3Energy, 0, 255, 0, maxWidth), 20);
+
+
+
+/*   let totalMovement = Math.abs(accX) + Math.abs(accY) + Math.abs(accZ);//movement in any direction
   //set your own threshold for how sensitive you want this to be
   if (totalMovement > 2) {
     background(255, 0, 0);
   } else {
     background(255);
-  }
+  } */
 
   //Creating a tilt sensor mechanic that has a sort of boolean logic (on or off)
   //if the phone is rotated front/back/left/right we will get an arrow point in that direction 
-  push();
+  /* push();
   translate(width / 2, height / 2);
 
   if (frontToBack > 40) {
@@ -106,13 +156,13 @@ function draw() {
     triangle(-30, -40, 0, -100, 30, -40);
     pop();
   }
-  pop();
-
+  pop(); */
+/*   
   //Debug text
   fill(0);
   textSize(15);
 
-  text("acceleration: ", 10, 10);
+text("acceleration: ", 10, 10);
   text(accX.toFixed(2) + ", " + accY.toFixed(2) + ", " + accZ.toFixed(2), 10, 40);
 
   text("rotation rate: ", 10, 80);
@@ -121,7 +171,7 @@ function draw() {
 
   text("device orientation: ", 10, 150);
   text(rotateDegrees.toFixed(2) + ", " + leftToRight.toFixed(2) + ", " + frontToBack.toFixed(2), 10, 180);
-
+ */
   if (mobileDevice) emit();
 
   let waveform = fft.waveform(); // analyze the waveform
@@ -164,12 +214,12 @@ function handlePermissionButtonPressed() {
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicemotion_event
 function deviceMotionHandler(event) {
 
-  accX = event.acceleration.x;
+/*   accX = event.acceleration.x;
   accY = event.acceleration.y;
   accZ = event.acceleration.z;
 
   rrateZ = event.rotationRate.alpha;//alpha: rotation around z-axis
-  rrateX = event.rotationRate.beta;//rotating about its X axis; that is, front to back
+  rrateX = event.rotationRate.beta;//rotating about its X axis; that is, front to back */
   rrateY = event.rotationRate.gamma;//rotating about its Y axis: left to right
 
 }
@@ -178,8 +228,8 @@ function deviceMotionHandler(event) {
 function deviceTurnedHandler(event) {
 
   //degrees 0 - 365
-  rotateDegrees = event.alpha; // alpha: rotation around z-axis
-  frontToBack = event.beta; // beta: front back motion
+/*   rotateDegrees = event.alpha; // alpha: rotation around z-axis
+  frontToBack = event.beta; // beta: front back motion */
   leftToRight = event.gamma; // gamma: left to right
 
 }
@@ -190,14 +240,20 @@ function emit() {
   osc.send(message); */
 
     socket.emit("data", {
-      mobileAccX: accX,
+      myId: myId,
+      freqCarrEnergy: freqCarrEnergy,
+      harm2Energy: harm2Energy,
+      harm3Energy: harm3Energy,
+
+
+/*       mobileAccX: accX,
       mobileAccY: accY,
       mobileAccZ: accZ,
       mobileRrateX: rrateX,
       mobileRrateY: rrateY,
       mobileRrateZ: rrateZ,
       mobileRotateDegrees: rotateDegrees,
-      mobileFrontToBack: frontToBack,
+      mobileFrontToBack: frontToBack, */
       mobileLeftToRight: leftToRight
     });
 
@@ -207,13 +263,13 @@ function emit() {
 // Connect to Node.JS Server
 socket.on("connect", () => {
   console.log(socket.id);
+  myId = socket.id;
 });
 
 // Callback function on the event we disconnect
 socket.on("disconnect", () => {
   console.log(socket.id);
 });
-
 
 
 /*
