@@ -1,4 +1,9 @@
-let osc, fft, mic;
+
+/* let osc = new OSC();
+osc.open(); // connect by default to ws://localhost:8080
+ */
+
+let oscillator, fft, mic;
 
 let audioStarted = false;
 
@@ -42,9 +47,9 @@ function setup() {
   //----------
 
 
-  osc = new p5.Oscillator(); // set frequency and type
-  osc.amp(1.0);
-  osc.freq(220);
+  oscillator = new p5.Oscillator(); // set frequency and type
+  oscillator.amp(1.0);
+  oscillator.freq(220);
 
   mic = new p5.AudioIn();
   mic.start();
@@ -57,7 +62,7 @@ function setup() {
 function touchStarted() {
   if (!audioStarted) {
     userStartAudio();
-    osc.start();
+    oscillator.start();
     audioStarted = true;
   }
 }
@@ -180,17 +185,21 @@ function deviceTurnedHandler(event) {
 }
 
 function emit() {
-  socket.emit("data", {
-    mobileAccX: accX,
-    mobileAccY: accY,
-    mobileAccZ: accZ,
-    mobileRrateX: rrateX,
-    mobileRrateY: rrateY,
-    mobileRrateZ: rrateZ,
-    mobileRotateDegrees: rotateDegrees,
-    mobileFrontToBack: frontToBack,
-    mobileLeftToRight: leftToRight
-  });
+/*   let message = new OSC.Message("/test/values/mobileAccX");
+  message.add(accX);
+  osc.send(message); */
+
+    socket.emit("data", {
+      mobileAccX: accX,
+      mobileAccY: accY,
+      mobileAccZ: accZ,
+      mobileRrateX: rrateX,
+      mobileRrateY: rrateY,
+      mobileRrateZ: rrateZ,
+      mobileRotateDegrees: rotateDegrees,
+      mobileFrontToBack: frontToBack,
+      mobileLeftToRight: leftToRight
+    });
 
 }
 
@@ -204,6 +213,9 @@ socket.on("connect", () => {
 socket.on("disconnect", () => {
   console.log(socket.id);
 });
+
+
+
 /*
 // Callback function to recieve message from Node.JS
 socket.on("data", (data) => {
@@ -221,7 +233,6 @@ socket.on("data", (data) => {
   leftToRight = data.mobileLeftToRight; 
 
 });*/
-
 /* 
 
 let osc, fft, mic;
