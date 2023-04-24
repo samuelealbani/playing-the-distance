@@ -32,6 +32,9 @@ let printEveryMessage = true;
 let sendIP = "127.0.0.1";//localhost
 let oscSendPort = "9130";
 
+const freqIntervals = [1,2, 3, 5, 7, 2.05, 3.05];
+let carrierFreq = 84;
+
 // Tell our Node.js Server to host our P5.JS sketch from the public folder.
 app.use(express.static("public"));
 
@@ -39,13 +42,21 @@ app.use(express.static("public"));
 // Setup Our Node.js server to listen to connections from chrome, and open chrome when it is ready
 server.listen(staticServerPort, () => {
   console.log(`listening on *: ${staticServerPort}`);
-  open("https://127.0.0.1:" + staticServerPort);
+  //open("https://127.0.0.1:" + staticServerPort);
 });
 
+// reassignHarmonics();
 
 // Callback function for what to do when our P5.JS sketch connects and sends us messages
 io.on("connection", (socket) => {
   console.log("a user connected");
+  reassignHarmonics();
+
+
+  socket.on("disconnect", () => {
+    console.log("disconnected", socket.id);
+    reassignHarmonics();
+  });
 
   // Code to run every time we get a message from front-end P5.JS
   socket.on("data", (data) => {
@@ -57,10 +68,32 @@ io.on("connection", (socket) => {
 
     // Print it to the Console
     if (printEveryMessage) {
-      console.log(data);
+      //console.log(data);
     }
   });
 });
+
+function reassignHarmonics() {
+  console.log('Reassigning Harmonics..');
+
+  let index = 0;
+  for (const [key, socket] of io.sockets.sockets.entries()) {
+    // key will be something like TTRWuTdEjhyGwKQvAAAB
+    // value will be a Socket
+    
+    // var socket = sockets[value.id];
+    console.log(index + '.' , 'key:', key,'socket.id', socket.id, 'setHarmonic', freqIntervals[index]);
+    socket.emit("setHarmonic", freqIntervals[index]);
+    socket.emit("setFrequency", carrierFreq);
+    index++;
+  }
+}
+
+function setNewFrequency() {
+  io.emit("setFrequency", newNoteFreq);
+  newNoteFreq = Math.floor(Math.random() * 400) + 70;
+  console.log('called emit setFrequency: ', newNoteFreq);
+}
 
 let udpPort = new osc.UDPPort({
   localAddress: "0.0.0.0",
@@ -72,13 +105,13 @@ function getIPAddresses() {
     ipAddresses = [];
 
   for (let deviceName in interfaces) {
-      let addresses = interfaces[deviceName];
-      for (let i = 0; i < addresses.length; i++) {
-          let addressInfo = addresses[i];
-          if (addressInfo.family === "IPv4" && !addressInfo.internal) {
-              ipAddresses.push(addressInfo.address);
-          }
+    let addresses = interfaces[deviceName];
+    for (let i = 0; i < addresses.length; i++) {
+      let addressInfo = addresses[i];
+      if (addressInfo.family === "IPv4" && !addressInfo.internal) {
+        ipAddresses.push(addressInfo.address);
       }
+    }
   }
 
   return ipAddresses;
@@ -89,7 +122,7 @@ udpPort.on("ready", () => {
 
   console.log("Listening for OSC over UDP.");
   ipAddresses.forEach((address) => {
-      console.log(" Host:", address + ", Port:", udpPort.options.localPort);
+    console.log(" Host:", address + ", Port:", udpPort.options.localPort);
   });
 
 });
@@ -98,7 +131,7 @@ udpPort.on("ready", () => {
 udpPort.on("message", (oscMessage) => {
 
   //send it to the front-end so we can use it with our p5 sketch
-  io.emit("message",oscMessage);
+  io.emit("message", oscMessage);
 
   //send it via OSC to another port, device or software (e.g. max msp)
   udpPort.send(oscMessage, sendIP, oscSendPort);

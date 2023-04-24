@@ -13,9 +13,14 @@ let tremFreqEnergy;
 let harm2Energy;
 let harm3Energy;
 
-let oscillator, fft, mic;
+let harmonicFactor;
+
+let oscillator, mic, fft;
+
+let currentFeq = 440;
 
 let audioStarted = false;
+let changeNote = false;
 
 // Create connection to Node.JS Server
 const socket = io();
@@ -56,16 +61,14 @@ function setup() {
 
   //----------
 
-
   oscillator = new p5.Oscillator(); // set frequency and type
-  oscillator.amp(1.0);
-  oscillator.freq(660);
+  oscillator.amp(0.8);
+  oscillator.freq(20);
 
   mic = new p5.AudioIn();
   mic.start();
   fft = new p5.FFT();
   fft.setInput(mic);
-
 
 }
 
@@ -81,14 +84,27 @@ function touchStarted() {
 function draw() {
   background(255);
 
+  if(changeNote){
+    oscillator.freq(currentFeq * harmonicFactor);
+    console.log('currentFeq', currentFeq);
+    changeNote = false;
+  }
 
   leftToRight = abs(leftToRight.toFixed(2));
   let amplitude = map(leftToRight, 0.0, 90.0, 0.9, 0.1);
   fill(0);
+  strokeWeight(2);
   textSize(15);
   text(leftToRight, 300, 40);
 
+  stroke(255, 0, 0);
+  text(harmonicFactor, 300, 80);
+
+  text(currentFeq * harmonicFactor, 300, 120);
+
+  // oscillator.freq(currentFeq);
   oscillator.amp(amplitude);
+
 
   fft.analyze();
 
@@ -121,13 +137,14 @@ function draw() {
 
 
 
-/*   let totalMovement = Math.abs(accX) + Math.abs(accY) + Math.abs(accZ);//movement in any direction
-  //set your own threshold for how sensitive you want this to be
-  if (totalMovement > 2) {
-    background(255, 0, 0);
-  } else {
-    background(255);
-  } */
+  /*   let totalMovement = Math.abs(accX) + Math.abs(accY) + Math.abs(accZ);//movement in any direction
+    //set your own threshold for how sensitive you want this to be
+    if (totalMovement > 2) {
+      background(255, 0, 0);
+    } else {
+      background(255);
+    } 
+    
 
   //Creating a tilt sensor mechanic that has a sort of boolean logic (on or off)
   //if the phone is rotated front/back/left/right we will get an arrow point in that direction 
@@ -157,21 +174,22 @@ function draw() {
     pop();
   }
   pop(); */
-/*   
-  //Debug text
-  fill(0);
-  textSize(15);
+  /*   
+    //Debug text
+    fill(0);
+    textSize(15);
+  
+  text("acceleration: ", 10, 10);
+    text(accX.toFixed(2) + ", " + accY.toFixed(2) + ", " + accZ.toFixed(2), 10, 40);
+  
+    text("rotation rate: ", 10, 80);
+    text(rrateX.toFixed(2) + ", " + rrateY.toFixed(2) + ", " + rrateZ.toFixed(2), 10, 110);
+  
+  
+    text("device orientation: ", 10, 150);
+    text(rotateDegrees.toFixed(2) + ", " + leftToRight.toFixed(2) + ", " + frontToBack.toFixed(2), 10, 180);
+   */
 
-text("acceleration: ", 10, 10);
-  text(accX.toFixed(2) + ", " + accY.toFixed(2) + ", " + accZ.toFixed(2), 10, 40);
-
-  text("rotation rate: ", 10, 80);
-  text(rrateX.toFixed(2) + ", " + rrateY.toFixed(2) + ", " + rrateZ.toFixed(2), 10, 110);
-
-
-  text("device orientation: ", 10, 150);
-  text(rotateDegrees.toFixed(2) + ", " + leftToRight.toFixed(2) + ", " + frontToBack.toFixed(2), 10, 180);
- */
   if (mobileDevice) emit();
 
   let waveform = fft.waveform(); // analyze the waveform
@@ -185,6 +203,19 @@ text("acceleration: ", 10, 10);
   endShape();
 }
 
+function setHarm(_harm) {
+  harmonicFactor = _harm;
+  changeNote = true;
+  console.log('received new harmonic factor:', harmonicFactor);
+}
+
+function setFreq(_freq) {
+  if(_freq != currentFeq){
+    changeNote = true;
+  }
+  currentFeq = _freq;
+  console.log('received new freq', _freq);
+}
 
 //Everything below here you could move to a three.js or other javascript sketch
 
@@ -214,12 +245,12 @@ function handlePermissionButtonPressed() {
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicemotion_event
 function deviceMotionHandler(event) {
 
-/*   accX = event.acceleration.x;
-  accY = event.acceleration.y;
-  accZ = event.acceleration.z;
-
-  rrateZ = event.rotationRate.alpha;//alpha: rotation around z-axis
-  rrateX = event.rotationRate.beta;//rotating about its X axis; that is, front to back */
+  /*   accX = event.acceleration.x;
+    accY = event.acceleration.y;
+    accZ = event.acceleration.z;
+  
+    rrateZ = event.rotationRate.alpha;//alpha: rotation around z-axis
+    rrateX = event.rotationRate.beta;//rotating about its X axis; that is, front to back */
   rrateY = event.rotationRate.gamma;//rotating about its Y axis: left to right
 
 }
@@ -228,34 +259,34 @@ function deviceMotionHandler(event) {
 function deviceTurnedHandler(event) {
 
   //degrees 0 - 365
-/*   rotateDegrees = event.alpha; // alpha: rotation around z-axis
-  frontToBack = event.beta; // beta: front back motion */
+  /*   rotateDegrees = event.alpha; // alpha: rotation around z-axis
+    frontToBack = event.beta; // beta: front back motion */
   leftToRight = event.gamma; // gamma: left to right
 
 }
 
 function emit() {
-/*   let message = new OSC.Message("/test/values/mobileAccX");
-  message.add(accX);
-  osc.send(message); */
+  /*   let message = new OSC.Message("/test/values/mobileAccX");
+    message.add(accX);
+    osc.send(message); */
 
-    socket.emit("data", {
-      myId: myId,
-      freqCarrEnergy: freqCarrEnergy,
-      harm2Energy: harm2Energy,
-      harm3Energy: harm3Energy,
+  socket.emit("data", {
+    myId: myId,
+    freqCarrEnergy: freqCarrEnergy,
+    harm2Energy: harm2Energy,
+    harm3Energy: harm3Energy,
 
 
-/*       mobileAccX: accX,
-      mobileAccY: accY,
-      mobileAccZ: accZ,
-      mobileRrateX: rrateX,
-      mobileRrateY: rrateY,
-      mobileRrateZ: rrateZ,
-      mobileRotateDegrees: rotateDegrees,
-      mobileFrontToBack: frontToBack, */
-      mobileLeftToRight: leftToRight
-    });
+    /*       mobileAccX: accX,
+          mobileAccY: accY,
+          mobileAccZ: accZ,
+          mobileRrateX: rrateX,
+          mobileRrateY: rrateY,
+          mobileRrateZ: rrateZ,
+          mobileRotateDegrees: rotateDegrees,
+          mobileFrontToBack: frontToBack, */
+    mobileLeftToRight: leftToRight
+  });
 
 }
 
@@ -270,6 +301,12 @@ socket.on("connect", () => {
 socket.on("disconnect", () => {
   console.log(socket.id);
 });
+
+
+socket.on("setFrequency", setFreq);
+
+socket.on("setHarmonic", setHarm);
+
 
 
 /*
