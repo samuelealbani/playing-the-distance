@@ -125,14 +125,18 @@ io.on("connection", (socket) => {
 
 
     let mirrorToSearch = data.assignedMirror;
-    function findIdByMirror(pair){
+    function findIdByMirror(pair) {
       return pair[1] === mirrorToSearch;
     }
-    let index = mirrorsIds.findIndex(findIdByMirror);
-    let id = mirrorsIds[index][0];
-    // console.log('id: ', id, ' mirror: ', mirrorToSearch);
+    if (mirrorsIds.length > 0) {
+      let index = mirrorsIds.findIndex(findIdByMirror);
+      let id = mirrorsIds[index][0];
+      // console.log('id: ', id, ' mirror: ', mirrorToSearch);
 
-    io.to(/*' socket#id' */ id).emit('mirror', data) // send to a specific id
+      io.to(/*' socket#id' */ id).emit('mirror', data) // send to a specific id
+
+    }
+
     //do something
     // socket.broadcast.emit('mirror', data);//broadcast.emit means send to everyone but the sender
     //send it via OSC to another port, device or software (e.g. max msp)

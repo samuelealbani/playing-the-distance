@@ -44,6 +44,8 @@ let mobileDevice = false;
 var binCount = 1024;
 var bins = new Array(binCount);
 
+let counter;
+
 
 function setup() {
   createCanvas(400, 400);
@@ -135,6 +137,8 @@ function draw() {
     osc.freq(selectedBin.freq);
   } */
 
+  
+
 
 
   freqCarrEnergy = fft.getEnergy(freqCarr, freqCarr);
@@ -145,7 +149,7 @@ function draw() {
   fill(255, 0, 0);
   textSize(24)
   textAlign(LEFT, TOP);
-  text(freqCarr + ' Hz: ' + freqCarrEnergy, 50, 50);
+  text(frameCount + ' Hz: ' + freqCarrEnergy, 50, 50);
   text(tremoloFreq + ' Hz: ' + tremFreqEnergy, 50, 80);
   text(harm2freq + ' Hz: ' + harm2Energy, 50, 110);
   text(harm3freq + ' Hz: ' + harm3Energy, 50, 140);
@@ -177,10 +181,17 @@ function draw() {
     let y = map(waveform[i], -1, 1, height, 0);
     vertex(x, y);
   }
-  socket.emit("waveform", {
-    assignedMirror: assignedMirror,
-    waveform: waveform
-  });
+
+  
+  // console.log('emitting');
+  if(frameCount%10 === 0){
+    socket.emit("waveform", {
+      assignedMirror: assignedMirror,
+      waveform: waveform
+    });
+  }
+
+ 
   // console.log (waveform);
   endShape();
 

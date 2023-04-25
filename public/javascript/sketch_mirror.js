@@ -18,7 +18,7 @@ let audioStarted = false;
 let changeNote = false;
 
 // Create connection to Node.JS Server
-const socket = io();
+let socket; //  = io();
 //global variables
 let askButton;
 
@@ -41,13 +41,18 @@ let waveform;
 
 let thisMirrorId;
 
-function preload(){
+function preload() {
   const myUrl = new URL(window.location.toLocaleString()).searchParams;
   console.log('myUrl', myUrl);
   const arg = myUrl.getAll('id');
   thisMirrorId = arg[0];
   console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
   document.getElementById('idNumber').innerHTML = thisMirrorId;
+
+  
+
+  setupSocket();
+
 }
 
 function setup() {
@@ -55,7 +60,7 @@ function setup() {
   rectMode(CENTER);
   angleMode(DEGREES);
 
-  
+
 
   /*   //----------
     //the bit between the two comment lines could be move to a three.js sketch except you'd need to create a button there
@@ -209,49 +214,47 @@ function emit() {
 
 }
 
-//Events that we are listening for
-// Connect to Node.JS Server
-socket.on("connect", () => {
-  console.log(socket.id);
-  socket.emit("identification", [false, thisMirrorId]);
-  // myId = socket.id;
-});
+function setupSocket() {
+  //Events that we are listening for
+  // Connect to Node.JS Server
 
-// Callback function on the event we disconnect
-socket.on("disconnect", () => {
-  console.log(socket.id);
-});
-
-
-socket.on("mirror", (input) => {
-  // console.log('receiving mirror', input.waveform);
-  // console.log(input.assignedMirror === thisMirrorId);
-  if(input.assignedMirror == thisMirrorId){
-    waveform = input.waveform;
-    //console.log(input);
-  } else {
-    //console.log('non è');
-  }
+  socket = io();
   
-  // drawWaveform();
-});
+  socket.on("connect", () => {
+    console.log('my socket.id: ', socket.id, 'sending', [false, thisMirrorId]);
+    socket.emit("identification", [false, thisMirrorId]);
+    // myId = socket.id;
+  });
 
-/* function drawWaveform(_wavef) {
-  beginShape();
-  strokeWeight(5);
-  for (let i = 0; i < _wavef.length; i++) {
-    let x = map(i, 0, _wavef.length, 0, width);
-    let y = map(_wavef[i], -1, 1, height, 0);
-    vertex(x, y);
-  }
-  // console.log (waveform);
-  endShape();
-} */
+  // Callback function on the event we disconnect
+  socket.on("disconnect", () => {
+    console.log(socket.id);
+  });
 
-socket.on("setFrequency", setFreq);
 
-socket.on("setHarmonic", setHarm);
+  socket.on("mirror", (input) => {
+    console.log('receiving mirror', input.waveform);
+    // console.log(input.assignedMirror === thisMirrorId);
+    if (input.assignedMirror == thisMirrorId) {
+      waveform = input.waveform;
+      //console.log(input);
+    } else {
+      //console.log('non è');
+    }
 
+    // drawWaveform();
+  });
+
+
+
+  socket.on("setFrequency", setFreq);
+
+  socket.on("setHarmonic", setHarm);
+
+
+
+
+}
 
 
 /*
