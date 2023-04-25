@@ -41,13 +41,21 @@ let waveform;
 
 let thisMirrorId;
 
+function preload(){
+  const myUrl = new URL(window.location.toLocaleString()).searchParams;
+  console.log('myUrl', myUrl);
+  const arg = myUrl.getAll('id');
+  thisMirrorId = arg[0];
+  console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
+  document.getElementById('idNumber').innerHTML = thisMirrorId;
+}
+
 function setup() {
   createCanvas(400, 400);
   rectMode(CENTER);
   angleMode(DEGREES);
 
-  thisMirrorId = document.getElementById('idNumber').innerHTML;
-  console.log('thisMirrorId', thisMirrorId);
+  
 
   /*   //----------
     //the bit between the two comment lines could be move to a three.js sketch except you'd need to create a button there
@@ -217,16 +225,18 @@ socket.on("disconnect", () => {
 
 socket.on("mirror", (input) => {
   // console.log('receiving mirror', input.waveform);
-  
+  // console.log(input.assignedMirror === thisMirrorId);
   if(input.assignedMirror == thisMirrorId){
     waveform = input.waveform;
-    console.log(input);
+    //console.log(input);
+  } else {
+    //console.log('non è');
   }
   
   // drawWaveform();
 });
 
-function drawWaveform(_wavef) {
+/* function drawWaveform(_wavef) {
   beginShape();
   strokeWeight(5);
   for (let i = 0; i < _wavef.length; i++) {
@@ -236,7 +246,7 @@ function drawWaveform(_wavef) {
   }
   // console.log (waveform);
   endShape();
-}
+} */
 
 socket.on("setFrequency", setFreq);
 

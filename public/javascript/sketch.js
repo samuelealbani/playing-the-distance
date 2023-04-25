@@ -70,7 +70,7 @@ function setup() {
 
   mic = new p5.AudioIn();
   mic.start();
-  fft = new p5.FFT();
+  fft = new p5.FFT(0.8, 256);
   fft.setInput(mic);
 }
 
@@ -100,8 +100,9 @@ function draw() {
   strokeWeight(2);
   textSize(15);
   text(leftToRight, 300, 40);
-  text(harmonicFactor, 300, 80);
-  text(currentFeq * harmonicFactor, 300, 120);
+  text('harm: ' + harmonicFactor, 300, 80);
+  text('' + currentFeq * harmonicFactor + ' Hz', 300, 120);
+  text('mirr: ' + assignedMirror, 300, 160);
 
   fft.analyze();
 
@@ -190,7 +191,7 @@ function draw() {
 
   /* if (mobileDevice)  */emit();
 
-  let waveform = fft.waveform(512); // analyze the waveform
+  let waveform = fft.waveform(); // analyze the waveform
   beginShape();
   strokeWeight(5);
   for (let i = 0; i < waveform.length; i++) {
@@ -274,7 +275,7 @@ function emit() {
     osc.send(message); */
 
   socket.emit("data", {
-    address: "/mobileData",
+    address: "/mobileData/"+assignedMirror,
     args: [
       { // id
         type: "s",
