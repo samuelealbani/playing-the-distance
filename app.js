@@ -25,6 +25,9 @@ const io = new Server(server);
 const osc = require("osc");
 const os = require("os");
 
+let voiceIds = [];
+let mirrorsIds = [];
+
 /* 
 // old import
 const open = require("open");
@@ -59,23 +62,44 @@ app.use(express.static("public"));
 // Setup Our Node.js server to listen to connections from chrome, and open chrome when it is ready
 server.listen(staticServerPort, () => {
   console.log(`listening on *: ${staticServerPort}`);
-  open("https://127.0.0.1:" + staticServerPort);
+  // open("https://127.0.0.1:" + staticServerPort);
 });
 
 // reassignHarmonics();
 
 // Callback function for what to do when our P5.JS sketch connects and sends us messages
 io.on("connection", (socket) => {
-  console.log("a user connected");
-  reassignHarmonics();
+  console.log("\n_________a user connected");
 
-/*   let message = new OSC.Message("/distances/noses");
-  message.add(34);
-  osc.send(message); */
+  // Code to run every time we get a message from front-end P5.JS
+  socket.on("identification", (_isVoice) => {
+
+    if (_isVoice) {
+      console.log(socket.id, "is a voice");
+      voiceIds.push(socket.id);
+      reassignHarmonics();
+    } else {
+      mirrorsIds.push(socket.id);
+      console.log(socket.id, "is a mirror");
+    }
+  });
+
+
+
+  /*   let message = new OSC.Message("/distances/noses");
+    message.add(34);
+    osc.send(message); */
 
   socket.on("disconnect", () => {
     console.log("disconnected", socket.id);
-    reassignHarmonics();
+    if (voiceIds.includes(socket.id)) {
+      const index = voiceIds.indexOf(socket.id);
+      if (index !== -1) {
+        voiceIds.splice(index, 1);
+      }
+      reassignHarmonics();
+    }
+
   });
 
   // Code to run every time we get a message from front-end P5.JS
@@ -86,7 +110,7 @@ io.on("connection", (socket) => {
     //send it via OSC to another port, device or software (e.g. max msp)
     udpPort.send(data, sendIP, oscSendPort);
 
-    console.log("receiving");
+    // console.log("receiving");
 
     // Print it to the Console
     if (printEveryMessage) {
@@ -110,8 +134,6 @@ io.on("connection", (socket) => {
     }
   });
 
-
-
 });
 
 
@@ -120,13 +142,13 @@ function getIPAddresses() {
     ipAddresses = [];
 
   for (let deviceName in interfaces) {
-      let addresses = interfaces[deviceName];
-      for (let i = 0; i < addresses.length; i++) {
-          let addressInfo = addresses[i];
-          if (addressInfo.family === "IPv4" && !addressInfo.internal) {
-              ipAddresses.push(addressInfo.address);
-          }
+    let addresses = interfaces[deviceName];
+    for (let i = 0; i < addresses.length; i++) {
+      let addressInfo = addresses[i];
+      if (addressInfo.family === "IPv4" && !addressInfo.internal) {
+        ipAddresses.push(addressInfo.address);
       }
+    }
   }
 
   return ipAddresses;
@@ -142,7 +164,7 @@ udpPort.on("ready", () => {
 
   console.log("Listening for OSC over UDP.");
   ipAddresses.forEach((address) => {
-      console.log(" Host:", address + ", Port:", udpPort.options.localPort);
+    console.log(" Host:", address + ", Port:", udpPort.options.localPort);
   });
 
 });
@@ -150,7 +172,7 @@ udpPort.on("ready", () => {
 udpPort.on("message", (oscMessage) => {
 
   //send it to the front-end so we can use it with our p5 sketch
-  io.emit("message",oscMessage);
+  io.emit("message", oscMessage);
 
   // Print it to the Console
   if (printEveryMessage) {
@@ -167,17 +189,39 @@ udpPort.open();
 function reassignHarmonics() {
   console.log('Reassigning Harmonics..');
 
-  let index = 0;
+
   for (const [key, socket] of io.sockets.sockets.entries()) {
     // key will be something like TTRWuTdEjhyGwKQvAAAB
     // value will be a Socket
 
     // var socket = sockets[value.id];
-    console.log(index + '.', 'key:', key, 'socket.id', socket.id, 'setHarmonic', freqIntervals[index]);
-    socket.emit("setHarmonic", freqIntervals[index]);
-    socket.emit("setFrequency", carrierFreq);
-    index++;
+    if (voiceIds.includes(socket.id)) {
+      const index = voiceIds.indexOf(socket.id);
+      console.log(socket.id, 'yes is a voice', 'index voice: ', voiceIds.indexOf(socket.id));
+      console.log(index + '.', 'key:', key, 'socket.id', socket.id, 'setHarmonic', freqIntervals[index]);
+
+      socket.emit("setHarmonic", freqIntervals[index]);
+      socket.emit("setFrequency", carrierFreq);
+    } else {
+      console.log(socket.id, 'no is a mirror');
+    }
+
   }
+
+  // old loop
+  // let index = 0;
+  // for (const [key, socket] of io.sockets.sockets.entries()) {
+  //   // key will be something like TTRWuTdEjhyGwKQvAAAB
+  //   // value will be a Socket
+
+  //   // var socket = sockets[value.id];
+  //   console.log(index + '.', 'key:', key, 'socket.id', socket.id, 'setHarmonic', freqIntervals[index]);
+
+  //   socket.emit("setHarmonic", freqIntervals[index]);
+  //   socket.emit("setFrequency", carrierFreq);
+  //   index++;
+  // } 
+
 }
 
 function setNewFrequency() {
@@ -185,3 +229,5 @@ function setNewFrequency() {
   newNoteFreq = Math.floor(Math.random() * 400) + 70;
   console.log('called emit setFrequency: ', newNoteFreq);
 }
+
+

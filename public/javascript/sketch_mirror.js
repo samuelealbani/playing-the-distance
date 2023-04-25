@@ -39,10 +39,15 @@ let mobileDevice = false;
 
 let waveform;
 
+let thisMirrorId;
+
 function setup() {
   createCanvas(400, 400);
   rectMode(CENTER);
   angleMode(DEGREES);
+
+  thisMirrorId = document.getElementById('idNumber').innerHTML;
+  console.log('thisMirrorId', thisMirrorId);
 
   /*   //----------
     //the bit between the two comment lines could be move to a three.js sketch except you'd need to create a button there
@@ -200,6 +205,7 @@ function emit() {
 // Connect to Node.JS Server
 socket.on("connect", () => {
   console.log(socket.id);
+  socket.emit("identification", false);
   // myId = socket.id;
 });
 
@@ -211,7 +217,12 @@ socket.on("disconnect", () => {
 
 socket.on("mirror", (input) => {
   // console.log('receiving mirror', input.waveform);
-  waveform = input.waveform;
+  
+  if(input.assignedMirror == thisMirrorId){
+    waveform = input.waveform;
+    console.log(input);
+  }
+  
   // drawWaveform();
 });
 

@@ -17,6 +17,8 @@ let currentFeq = 440;
 let audioStarted = false;
 let changeNote = false;
 
+let assignedMirror;
+
 // Create connection to Node.JS Server
 const socket = io();
 //global variables
@@ -42,6 +44,12 @@ function setup() {
   createCanvas(400, 400);
   rectMode(CENTER);
   angleMode(DEGREES);
+
+  const myUrl = new URL(window.location.toLocaleString()).searchParams;
+  console.log('myUrl', myUrl);
+  const nMirror = myUrl.getAll('mirror');
+  assignedMirror = nMirror[0];
+  console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror);
 
   //----------
   //the bit between the two comment lines could be move to a three.js sketch except you'd need to create a button there
@@ -191,6 +199,7 @@ function draw() {
     vertex(x, y);
   }
   socket.emit("waveform", {
+    assignedMirror: assignedMirror,
     waveform: waveform
   });
   // console.log (waveform);
@@ -271,6 +280,10 @@ function emit() {
         type: "s",
         value: myId
       },
+      { // assignedMirror
+        type: "i",
+        value: assignedMirror
+      },
       { // freqCarrEnergy
         type: "f",
         value: mouseY / height
@@ -296,7 +309,6 @@ function emit() {
   }); */
 
   //console.log("emitting");
-
 }
 
 //Events that we are listening for
@@ -304,6 +316,8 @@ function emit() {
 socket.on("connect", () => {
   console.log(socket.id);
   myId = socket.id;
+
+  socket.emit("identification", true);
 });
 
 // Callback function on the event we disconnect
@@ -315,8 +329,6 @@ socket.on("disconnect", () => {
 socket.on("setFrequency", setFreq);
 
 socket.on("setHarmonic", setHarm);
-
-
 
 /*
 // Callback function to recieve message from Node.JS
