@@ -60,7 +60,6 @@ function setup() {
   }
 
   //----------
-
   oscillator = new p5.Oscillator(); // set frequency and type
   oscillator.amp(0.8);
   oscillator.freq(20);
@@ -69,7 +68,6 @@ function setup() {
   mic.start();
   fft = new p5.FFT();
   fft.setInput(mic);
-
 }
 
 function touchStarted() {
@@ -91,20 +89,15 @@ function draw() {
   }
 
   leftToRight = abs(leftToRight.toFixed(2));
-  let amplitude = map(leftToRight, 0.0, 90.0, 0.9, 0.1);
+  const amplitude = map(leftToRight, 0.0, 90.0, 0.9, 0.1);
+  oscillator.amp(amplitude);
+
   fill(0);
   strokeWeight(2);
   textSize(15);
   text(leftToRight, 300, 40);
-
-  stroke(255, 0, 0);
   text(harmonicFactor, 300, 80);
-
   text(currentFeq * harmonicFactor, 300, 120);
-
-  // oscillator.freq(currentFeq);
-  oscillator.amp(amplitude);
-
 
   fft.analyze();
 
@@ -112,6 +105,7 @@ function draw() {
   tremFreqEnergy = fft.getEnergy(tremoloFreq, tremoloFreq);
   harm2Energy = fft.getEnergy(harm2freq, harm2freq);
   harm3Energy = fft.getEnergy(harm3freq, harm3freq);
+
   fill(255, 0, 0);
   textSize(24)
   textAlign(LEFT, TOP);
@@ -137,7 +131,8 @@ function draw() {
 
 
 
-  /*   let totalMovement = Math.abs(accX) + Math.abs(accY) + Math.abs(accZ);//movement in any direction
+  /*  
+   let totalMovement = Math.abs(accX) + Math.abs(accY) + Math.abs(accZ);//movement in any direction
     //set your own threshold for how sensitive you want this to be
     if (totalMovement > 2) {
       background(255, 0, 0);
@@ -173,8 +168,7 @@ function draw() {
     triangle(-30, -40, 0, -100, 30, -40);
     pop();
   }
-  pop(); */
-  /*   
+  pop();    
     //Debug text
     fill(0);
     textSize(15);
@@ -275,8 +269,6 @@ function emit() {
     freqCarrEnergy: freqCarrEnergy,
     harm2Energy: harm2Energy,
     harm3Energy: harm3Energy,
-
-
     /*       mobileAccX: accX,
           mobileAccY: accY,
           mobileAccZ: accZ,
