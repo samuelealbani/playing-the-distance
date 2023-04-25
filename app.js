@@ -72,15 +72,15 @@ io.on("connection", (socket) => {
   console.log("\n_________a user connected");
 
   // Code to run every time we get a message from front-end P5.JS
-  socket.on("identification", (_isVoice) => {
+  socket.on("identification", (res) => {
 
-    if (_isVoice) {
+    if (res[0]) {
       console.log(socket.id, "is a voice");
       voiceIds.push(socket.id);
       reassignHarmonics();
     } else {
-      mirrorsIds.push(socket.id);
-      console.log(socket.id, "is a mirror");
+      mirrorsIds.push([socket.id, res[1]]); // store the socket.id with the number of mirror
+      console.log(socket.id, "is a mirror", res[1]);
     }
   });
 
@@ -121,8 +121,20 @@ io.on("connection", (socket) => {
   // Code to run every time we get a message from front-end P5.JS
   socket.on("waveform", (data) => {
 
+    // console.log(data.assignedMirror);
+
+
+    let mirrorToSearch = data.assignedMirror;
+    function findIdByMirror(pair){
+      return pair[1] === mirrorToSearch;
+    }
+    let index = mirrorsIds.findIndex(findIdByMirror);
+    let id = mirrorsIds[index][0];
+    // console.log('id: ', id, ' mirror: ', mirrorToSearch);
+
+    io.to(/*' socket#id' */ id).emit('mirror', data) // send to a specific id
     //do something
-    socket.broadcast.emit('mirror', data);//broadcast.emit means send to everyone but the sender
+    // socket.broadcast.emit('mirror', data);//broadcast.emit means send to everyone but the sender
     //send it via OSC to another port, device or software (e.g. max msp)
     // udpPort.send(data, sendIP, oscSendPort);
 

@@ -213,7 +213,7 @@ function emit() {
 // Connect to Node.JS Server
 socket.on("connect", () => {
   console.log(socket.id);
-  socket.emit("identification", false);
+  socket.emit("identification", [false, thisMirrorId]);
   // myId = socket.id;
 });
 
