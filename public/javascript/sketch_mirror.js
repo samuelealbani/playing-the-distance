@@ -37,164 +37,61 @@ let leftToRight = 0;
 
 let mobileDevice = false;
 
+let waveform;
 
 function setup() {
   createCanvas(400, 400);
   rectMode(CENTER);
   angleMode(DEGREES);
 
-  //----------
-  //the bit between the two comment lines could be move to a three.js sketch except you'd need to create a button there
-  if (typeof DeviceMotionEvent.requestPermission === 'function' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    // iOS 13+
-    askButton = createButton('Permission');//p5 create button
-    askButton.mousePressed(handlePermissionButtonPressed);//p5 listen to mousePressed event
-  } else {
-    //if there is a device that doesn't require permission
-    window.addEventListener('devicemotion', deviceMotionHandler, true);
-    window.addEventListener('deviceorientation', deviceTurnedHandler, true)
-  }
-
-  //----------
-  oscillator = new p5.Oscillator(); // set frequency and type
-  oscillator.amp(0.8);
-  oscillator.freq(20);
-
-  mic = new p5.AudioIn();
-  mic.start();
-  fft = new p5.FFT();
-  fft.setInput(mic);
+  /*   //----------
+    //the bit between the two comment lines could be move to a three.js sketch except you'd need to create a button there
+    if (typeof DeviceMotionEvent.requestPermission === 'function' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      // iOS 13+
+      askButton = createButton('Permission');//p5 create button
+      askButton.mousePressed(handlePermissionButtonPressed);//p5 listen to mousePressed event
+    } else {
+      //if there is a device that doesn't require permission
+      window.addEventListener('devicemotion', deviceMotionHandler, true);
+      window.addEventListener('deviceorientation', deviceTurnedHandler, true)
+    }
+  
+    //----------
+    oscillator = new p5.Oscillator(); // set frequency and type
+    oscillator.amp(0.8);
+    oscillator.freq(20);
+  
+    mic = new p5.AudioIn();
+    mic.start();
+    fft = new p5.FFT();
+    fft.setInput(mic); */
 }
 
-function touchStarted() {
+/* function touchStarted() {
   if (!audioStarted) {
     userStartAudio();
     oscillator.start();
     audioStarted = true;
   }
-}
+} */
 
 //we are using p5.js to visualise this movement data
 function draw() {
   background(255);
 
-  if (changeNote) {
-    oscillator.freq(currentFeq * harmonicFactor);
-    console.log('currentFeq', currentFeq);
-    changeNote = false;
+  if (waveform) {
+    beginShape();
+    strokeWeight(5);
+    for (let i = 0; i < waveform.length; i++) {
+      let x = map(i, 0, waveform.length, 0, width);
+      let y = map(waveform[i], -1, 1, height, 0);
+      vertex(x, y);
+    }
+    // console.log (waveform);
+    endShape();
   }
 
-  leftToRight = abs(leftToRight.toFixed(2));
-  const amplitude = map(leftToRight, 0.0, 90.0, 0.9, 0.1);
-  oscillator.amp(amplitude);
 
-  fill(0);
-  strokeWeight(2);
-  textSize(15);
-  text(leftToRight, 300, 40);
-  text(harmonicFactor, 300, 80);
-  text(currentFeq * harmonicFactor, 300, 120);
-
-  fft.analyze();
-
-  freqCarrEnergy = fft.getEnergy(freqCarr, freqCarr);
-  tremFreqEnergy = fft.getEnergy(tremoloFreq, tremoloFreq);
-  harm2Energy = fft.getEnergy(harm2freq, harm2freq);
-  harm3Energy = fft.getEnergy(harm3freq, harm3freq);
-
-  fill(255, 0, 0);
-  textSize(24)
-  textAlign(LEFT, TOP);
-  text(freqCarr + ' Hz: ' + freqCarrEnergy, 50, 50);
-  text(tremoloFreq + ' Hz: ' + tremFreqEnergy, 50, 80);
-  text(harm2freq + ' Hz: ' + harm2Energy, 50, 110);
-  text(harm3freq + ' Hz: ' + harm3Energy, 50, 140);
-
-  const maxWidth = 100;
-  const xVueMeters = 180;
-  stroke(0);
-  noFill();
-  rect(xVueMeters, 50, maxWidth, 20);
-  rect(xVueMeters, 80, maxWidth, 20);
-  rect(xVueMeters, 110, maxWidth, 20);
-  rect(xVueMeters, 140, maxWidth, 20);
-  fill(0);
-
-  rect(xVueMeters, 50, map(freqCarrEnergy, 0, 255, 0, maxWidth), 20);
-  rect(xVueMeters, 80, map(tremFreqEnergy, 0, 255, 0, maxWidth), 20);
-  rect(xVueMeters, 110, map(harm2Energy, 0, 255, 0, maxWidth), 20);
-  rect(xVueMeters, 140, map(harm3Energy, 0, 255, 0, maxWidth), 20);
-
-
-
-  /*  
-   let totalMovement = Math.abs(accX) + Math.abs(accY) + Math.abs(accZ);//movement in any direction
-    //set your own threshold for how sensitive you want this to be
-    if (totalMovement > 2) {
-      background(255, 0, 0);
-    } else {
-      background(255);
-    } 
-    
-
-  //Creating a tilt sensor mechanic that has a sort of boolean logic (on or off)
-  //if the phone is rotated front/back/left/right we will get an arrow point in that direction 
-  /* push();
-  translate(width / 2, height / 2);
-
-  if (frontToBack > 40) {
-    push();
-    rotate(-180);
-    triangle(-30, -40, 0, -100, 30, -40);
-    pop();
-  } else if (frontToBack < 0) {
-    push();
-    triangle(-30, -40, 0, -100, 30, -40);
-    pop();
-  }
-
-  if (leftToRight > 20) {
-    push();
-    rotate(90);
-    triangle(-30, -40, 0, -100, 30, -40);
-    pop();
-  } else if (leftToRight < -20) {
-    push();
-    rotate(-90);
-    triangle(-30, -40, 0, -100, 30, -40);
-    pop();
-  }
-  pop();    
-    //Debug text
-    fill(0);
-    textSize(15);
-  
-  text("acceleration: ", 10, 10);
-    text(accX.toFixed(2) + ", " + accY.toFixed(2) + ", " + accZ.toFixed(2), 10, 40);
-  
-    text("rotation rate: ", 10, 80);
-    text(rrateX.toFixed(2) + ", " + rrateY.toFixed(2) + ", " + rrateZ.toFixed(2), 10, 110);
-  
-  
-    text("device orientation: ", 10, 150);
-    text(rotateDegrees.toFixed(2) + ", " + leftToRight.toFixed(2) + ", " + frontToBack.toFixed(2), 10, 180);
-   */
-
-  /* if (mobileDevice)  */emit();
-
-  let waveform = fft.waveform(512); // analyze the waveform
-  beginShape();
-  strokeWeight(5);
-  for (let i = 0; i < waveform.length; i++) {
-    let x = map(i, 0, waveform.length, 0, width);
-    let y = map(waveform[i], -1, 1, height, 0);
-    vertex(x, y);
-  }
-  socket.emit("waveform", {
-    waveform: waveform
-  });
-  // console.log (waveform);
-  endShape();
 }
 
 function setHarm(_harm) {
@@ -303,7 +200,7 @@ function emit() {
 // Connect to Node.JS Server
 socket.on("connect", () => {
   console.log(socket.id);
-  myId = socket.id;
+  // myId = socket.id;
 });
 
 // Callback function on the event we disconnect
@@ -311,6 +208,24 @@ socket.on("disconnect", () => {
   console.log(socket.id);
 });
 
+
+socket.on("mirror", (input) => {
+  // console.log('receiving mirror', input.waveform);
+  waveform = input.waveform;
+  // drawWaveform();
+});
+
+function drawWaveform(_wavef) {
+  beginShape();
+  strokeWeight(5);
+  for (let i = 0; i < _wavef.length; i++) {
+    let x = map(i, 0, _wavef.length, 0, width);
+    let y = map(_wavef[i], -1, 1, height, 0);
+    vertex(x, y);
+  }
+  // console.log (waveform);
+  endShape();
+}
 
 socket.on("setFrequency", setFreq);
 

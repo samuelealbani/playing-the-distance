@@ -4,41 +4,49 @@
 //This is for a locally hosted server only!
 // https://learn.gold.ac.uk/mod/page/view.php?id=1269356
 
-// Import Libraries and Setup
+// Import Libraries and Setupù
+
 const open = require("open");
 const fs = require('fs');
-const OSC = require('osc-js')
-const osc = new OSC({ plugin: new OSC.WebsocketServerPlugin() })
-osc.open() // listening on 'ws://localhost:8080'
 
-setInterval(testSend, 1000);
-function testSend(){
-  var message = new OSC.Message("/test/random", 33);
-  osc.send(message);
-  console.log("auto message");
-}
-
-
+const express = require("express");
+const app = express();
+// const http = require("http");
+const https = require('https');
+//const server = http.createServer(app);
 //https certificates 
 const options = {
   key: fs.readFileSync('cert.key'),
   cert: fs.readFileSync('cert.crt')
 };
+const server = https.createServer(options, app);//use certificates for https
+const { Server } = require("socket.io");
+const io = new Server(server);
+const osc = require("osc");
+const os = require("os");
 
+/* 
+// old import
+const open = require("open");
+const fs = require('fs');
+const OSC = require('osc-js')
+const osc = new OSC({ plugin: new OSC.WebsocketServerPlugin() })
+osc.open() // listening on 'ws://localhost:8080'
 const express = require("express");
 const app = express();
 const https = require('https');
 const server = https.createServer(options, app);//use certificates for https
-
 const { Server } = require("socket.io");
 const io = new Server(server);
+ */
 
 
+
+
+let staticServerPort = "4400";
+let printEveryMessage = false;
 
 let oscRecievePort = "9129";
-let staticServerPort = "4400";
-let printEveryMessage = true;
-
 let sendIP = "127.0.0.1";//localhost
 let oscSendPort = "9130";
 
@@ -48,11 +56,10 @@ let carrierFreq = 84;
 // Tell our Node.js Server to host our P5.JS sketch from the public folder.
 app.use(express.static("public"));
 
-
 // Setup Our Node.js server to listen to connections from chrome, and open chrome when it is ready
 server.listen(staticServerPort, () => {
   console.log(`listening on *: ${staticServerPort}`);
-  //open("https://127.0.0.1:" + staticServerPort);
+  open("https://127.0.0.1:" + staticServerPort);
 });
 
 // reassignHarmonics();
@@ -62,9 +69,9 @@ io.on("connection", (socket) => {
   console.log("a user connected");
   reassignHarmonics();
 
-  let message = new OSC.Message("/distances/noses");
+/*   let message = new OSC.Message("/distances/noses");
   message.add(34);
-  osc.send(message);
+  osc.send(message); */
 
   socket.on("disconnect", () => {
     console.log("disconnected", socket.id);
@@ -77,14 +84,85 @@ io.on("connection", (socket) => {
     //do something
     // socket.broadcast.emit('mirror', data);//broadcast.emit means send to everyone but the sender
     //send it via OSC to another port, device or software (e.g. max msp)
-    // udpPort.send(data, sendIP, oscSendPort);
+    udpPort.send(data, sendIP, oscSendPort);
+
+    console.log("receiving");
 
     // Print it to the Console
     if (printEveryMessage) {
-      //console.log(data);
+      console.log(data);
     }
   });
+
+  // Code to run every time we get a message from front-end P5.JS
+  socket.on("waveform", (data) => {
+
+    //do something
+    socket.broadcast.emit('mirror', data);//broadcast.emit means send to everyone but the sender
+    //send it via OSC to another port, device or software (e.g. max msp)
+    // udpPort.send(data, sendIP, oscSendPort);
+
+    // console.log("receiving");
+
+    // Print it to the Console
+    if (printEveryMessage) {
+      console.log(data);
+    }
+  });
+
+
+
 });
+
+
+function getIPAddresses() {
+  let interfaces = os.networkInterfaces(),
+    ipAddresses = [];
+
+  for (let deviceName in interfaces) {
+      let addresses = interfaces[deviceName];
+      for (let i = 0; i < addresses.length; i++) {
+          let addressInfo = addresses[i];
+          if (addressInfo.family === "IPv4" && !addressInfo.internal) {
+              ipAddresses.push(addressInfo.address);
+          }
+      }
+  }
+
+  return ipAddresses;
+};
+
+let udpPort = new osc.UDPPort({
+  localAddress: "0.0.0.0",
+  localPort: oscRecievePort
+});
+
+udpPort.on("ready", () => {
+  let ipAddresses = getIPAddresses();
+
+  console.log("Listening for OSC over UDP.");
+  ipAddresses.forEach((address) => {
+      console.log(" Host:", address + ", Port:", udpPort.options.localPort);
+  });
+
+});
+
+udpPort.on("message", (oscMessage) => {
+
+  //send it to the front-end so we can use it with our p5 sketch
+  io.emit("message",oscMessage);
+
+  // Print it to the Console
+  if (printEveryMessage) {
+    console.log(oscMessage);
+  }
+});
+
+udpPort.on("error", (err) => {
+  console.log(err);
+});
+
+udpPort.open();
 
 function reassignHarmonics() {
   console.log('Reassigning Harmonics..');
