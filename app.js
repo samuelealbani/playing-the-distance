@@ -149,12 +149,6 @@ udpPort.on("error", (err) => {
 udpPort.open();
 
 /* 
-
-
-
-
-
-
 // everytime se receive a message
 udpPort.on("message", (oscMessage) => {
 
