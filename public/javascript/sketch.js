@@ -1,8 +1,3 @@
-
-/* let osc = new OSC();
-osc.open(); // connect by default to ws://localhost:8080
- */
-
 let freqCarr = 440;
 let tremoloFreq = 442;
 let harm2freq = 660;
@@ -41,6 +36,7 @@ let frontToBack = 0;
 let leftToRight = 0;
 
 let mobileDevice = false;
+
 
 function setup() {
   createCanvas(400, 400);
