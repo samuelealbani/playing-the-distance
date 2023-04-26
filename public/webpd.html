@@ -28,10 +28,11 @@
     </head>
     <body>
         <button id="start"> Start </button>
+        <button onclick="sendMsgToWebPd('n_0_3', '0', [240])" > freq 240 </button>
+        <button onclick="sendMsgToWebPd('n_0_3', '0', [660])" > freq 660 </button>
         <div id="loading"> Loading ... </div>
-        <script src="webpd-runtime.js"></script>
-        <script>
-            const loadingDiv = document.querySelector('#loading')
+        <script src="javascript/libs/webpd-runtime.js"></script>
+        <script>/* const loadingDiv = document.querySelector('#loading')
             const startButton = document.querySelector('#start')
             const audioContext = new AudioContext()
 
@@ -44,7 +45,7 @@
                 await WebPdRuntime.registerWebPdWorkletNode(audioContext)
 
                 // Fetch the patch code
-                response = await fetch('patch.wasm')
+                response = await fetch('webassembly/patch_input-f-a.wasm')
                 patch = await response.arrayBuffer()
 
                 // Get audio input
@@ -109,6 +110,9 @@
             
             // For info, compilation has opened the following ports in your patch.
             // You can send messages to them :
+            //     - Node of type "floatatom", nodeId "n_0_3", portletId "0"
+            //     - Node of type "floatatom", nodeId "n_0_4", portletId "0"
+         */
         </script>
         <script src="javascript/sketch_webpd.js"></script>
     </body>

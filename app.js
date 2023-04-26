@@ -55,8 +55,8 @@ let oscRecievePort = "9129";
 let sendIP = "127.0.0.1";//localhost
 let oscSendPort = "9130";
 
-const freqIntervals = [1, 2, 3, 5, 7, 2.05, 3.05];
-let carrierFreq = 384;
+const freqIntervals = [1, 2, 3, 5, 7];
+let carrierFreq = 100;
 
 // Tell our Node.js Server to host our P5.JS sketch from the public folder.
 app.use(express.static("public"));
@@ -216,7 +216,7 @@ function reassignHarmonics() {
       console.log(socket.id, 'yes is a voice', 'index voice: ', voiceIds.indexOf(socket.id));
       console.log(index + '.', 'key:', key, 'socket.id', socket.id, 'setHarmonic', freqIntervals[index]);
 
-      socket.emit("setHarmonic", freqIntervals[index]);
+      socket.emit("setHarmonic", freqIntervals/* [index] */);
       socket.emit("setFrequency", carrierFreq);
     } else {
       console.log(socket.id, 'no is a mirror');

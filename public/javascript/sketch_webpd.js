@@ -1,8 +1,109 @@
+const myUrl = new URL(window.location.toLocaleString()).searchParams;
+console.log('myUrl', myUrl);
+const nMirror = myUrl.getAll('mirror');
+let assignedMirror = nMirror[0];
+console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror);
+
+
 const socket = io();
+/* ------------ */
+
+const loadingDiv = document.querySelector('#loading')
+const startButton = document.querySelector('#start')
+const audioContext = new AudioContext()
+
+let patch = null
+let stream = null
+let webpdNode = null
+
+const initApp = async () => {
+  // Register the worklet
+  await WebPdRuntime.registerWebPdWorkletNode(audioContext)
+
+  // Fetch the patch code
+  response = await fetch('webassembly/patch.wasm')
+  patch = await response.arrayBuffer()
+
+  // Get audio input
+  stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
+  // Hide loading and show start button
+  loadingDiv.style.display = 'none'
+  startButton.style.display = 'block'
+}
+
+const startApp = async () => {
+  // AudioContext needs to be resumed on click to protects users 
+  // from being spammed with autoplay.
+  // See : https://github.com/WebAudio/web-audio-api/issues/345
+  if (audioContext.state === 'suspended') {
+    audioContext.resume()
+  }
+
+  // Setup web audio graph
+  const sourceNode = audioContext.createMediaStreamSource(stream)
+  webpdNode = new WebPdRuntime.WebPdWorkletNode(audioContext)
+  sourceNode.connect(webpdNode)
+  webpdNode.connect(audioContext.destination)
+
+  // Setup filesystem management
+  webpdNode.port.onmessage = (message) => WebPdRuntime.fs.web(webpdNode, message)
+
+  // Send code to the worklet
+
+  webpdNode.port.postMessage({
+    type: 'code:WASM',
+    payload: {
+      wasmBuffer: patch,
+    },
+  })
+
+
+
+  
+  // Hide the start button
+  startButton.style.display = 'none'
+
+}
+
+startButton.onclick = startApp
+
+initApp().
+  then(() => {
+    // set initial freq
+    console.log('App initialized')
+  })
+
+
+// You can then use this function to interact with your patch
+// e.g. :
+// sendMsgToWebPd('n_0_1', '0', ['bang'])
+// sendMsgToWebPd('n_0_2', '0', [123])
+const sendMsgToWebPd = (nodeId, portletId, message) => {
+  webpdNode.port.postMessage({
+    type: 'inletCaller',
+    payload: {
+      nodeId,
+      portletId,
+      message,
+    },
+  })
+}
+
+// For info, compilation has opened the following ports in your patch.
+// You can send messages to them :
+//     - Node of type "floatatom", nodeId "n_0_3", portletId "0"
+//     - Node of type "floatatom", nodeId "n_0_4", portletId "0"
+
+/* ------------ */
+
+
 
 let mic;
 
-let freqCarr = 440;
+let harmonicFactor
+
+let freqCarr;
 let tremoloFreq = 442;
 let harm2freq = 660;
 let harm3freq = 880;
@@ -12,18 +113,35 @@ let tremFreqEnergy;
 let harm2Energy;
 let harm3Energy;
 
-let assignedMirror;
+let currentFreq;
+/* let assignedMirror; */
+
+let started = false;
+
+
+function test() {
+  sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
+  sendMsgToWebPd('n_0_2', '0', [0.3]);
+}
+
+function setNewFreq(){
+  sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
+}
 
 function setup() {
   createCanvas(500, 500);
 
-  const myUrl = new URL(window.location.toLocaleString()).searchParams;
+
+
+ /*  const myUrl = new URL(window.location.toLocaleString()).searchParams;
   console.log('myUrl', myUrl);
   const nMirror = myUrl.getAll('mirror');
   assignedMirror = nMirror[0];
-  console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror);
+  console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror); */
 
-  
+  harmonicFactor
+
+
   mic = new p5.AudioIn();
   mic.start();
 
@@ -33,10 +151,24 @@ function setup() {
 
 function touchStarted() {
   userStartAudio();
+  if(!started){
+    test();
+    started = true;
+  } else {
+    setNewFreq();
+  }
+  
 
 }
 
-function draw(){
+function draw() {
+/*   if (changeNote) {
+    currentFreq = freqCarr * harmonicFactor;
+    
+    changeNote = false;
+  } */
+ 
+  
   background(100);
   fft.analyze();
 
@@ -66,17 +198,17 @@ function draw(){
 
   textSize(160)
   textAlign(LEFT, TOP);
-  text(assignedMirror , width/2, height/2+100);
+  text(assignedMirror, width / 2, height / 2 + 100);
 
-  
+
   emit();
-  
+
   let waveform = fft.waveform(); // analyze the waveform
 
-  let reduced =[];
+  let reduced = [];
   beginShape();
   strokeWeight(5);
-  for (let i = 0; i < waveform.length; i+=16) {
+  for (let i = 0; i < waveform.length; i += 16) {
     let x = map(i, 0, waveform.length, 0, width);
     let y = map(waveform[i], -1, 1, height, 0);
     vertex(x, y);
@@ -84,16 +216,16 @@ function draw(){
   }
 
   console.log('waveform.length', waveform.length, 'reduced.length', reduced.length);
-/*   for (let i = 0; i < waveform.length; i++) {
-    let x = map(i, 0, waveform.length, 0, width);
-    let y = map(waveform[i], -1, 1, height, 0);
-    vertex(x, y);
-  } */
+  /*   for (let i = 0; i < waveform.length; i++) {
+      let x = map(i, 0, waveform.length, 0, width);
+      let y = map(waveform[i], -1, 1, height, 0);
+      vertex(x, y);
+    } */
 
-  
+
   // console.log('emitting');
-  if(frameCount%10 === 0){
-   ;
+  if (frameCount % 10 === 0) {
+    ;
   }
 
   socket.emit("waveform", {
@@ -164,4 +296,16 @@ socket.on("disconnect", () => {
 
 socket.on("setFrequency", setFreq);
 
+function setFreq(arg) {
+  freqCarr = arg;
+  // changeNote = true;
+  console.log('received carrier frequency', freqCarr);
+}
+
 socket.on("setHarmonic", setHarm);
+function setHarm(_harm) {
+  harmonicFactor = _harm[assignedMirror];
+  // changeNote = true;
+  console.log('received new harmonic factor:', _harm, harmonicFactor);
+}
+
