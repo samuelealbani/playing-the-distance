@@ -63,17 +63,32 @@ function draw(){
   rect(xVueMeters, 50, map(freqCarrEnergy, 0, 255, 0, maxWidth), 20);
   rect(xVueMeters, 80, map(harm2Energy, 0, 255, 0, maxWidth), 20);
   rect(xVueMeters, 110, map(harm3Energy, 0, 255, 0, maxWidth), 20);
+
+  textSize(160)
+  textAlign(LEFT, TOP);
+  text(assignedMirror , width/2, height/2+100);
+
   
-  // emit();
+  emit();
   
   let waveform = fft.waveform(); // analyze the waveform
+
+  let reduced =[];
   beginShape();
   strokeWeight(5);
-  for (let i = 0; i < waveform.length; i++) {
+  for (let i = 0; i < waveform.length; i+=16) {
     let x = map(i, 0, waveform.length, 0, width);
     let y = map(waveform[i], -1, 1, height, 0);
     vertex(x, y);
+    reduced.push(waveform[i]);
   }
+
+  console.log('waveform.length', waveform.length, 'reduced.length', reduced.length);
+/*   for (let i = 0; i < waveform.length; i++) {
+    let x = map(i, 0, waveform.length, 0, width);
+    let y = map(waveform[i], -1, 1, height, 0);
+    vertex(x, y);
+  } */
 
   
   // console.log('emitting');
@@ -83,7 +98,7 @@ function draw(){
 
   socket.emit("waveform", {
     assignedMirror: assignedMirror,
-    waveform: waveform
+    waveform: /* waveform */ reduced
   })
   // console.log (waveform);
   endShape();
