@@ -60,7 +60,7 @@ const startApp = async () => {
 
 
 
-  
+
   // Hide the start button
   startButton.style.display = 'none'
 
@@ -101,7 +101,7 @@ const sendMsgToWebPd = (nodeId, portletId, message) => {
 
 let mic;
 
-let harmonicFactor
+let harmonicFactor, harmonicsArray;
 
 let freqCarr;
 let tremoloFreq = 442;
@@ -114,6 +114,8 @@ let harm2Energy;
 let harm3Energy;
 
 let currentFreq;
+
+let volumes = [];
 /* let assignedMirror; */
 
 let started = false;
@@ -124,7 +126,7 @@ function test() {
   sendMsgToWebPd('n_0_2', '0', [0.3]);
 }
 
-function setNewFreq(){
+function setNewFreq() {
   sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
 }
 
@@ -133,11 +135,11 @@ function setup() {
 
 
 
- /*  const myUrl = new URL(window.location.toLocaleString()).searchParams;
-  console.log('myUrl', myUrl);
-  const nMirror = myUrl.getAll('mirror');
-  assignedMirror = nMirror[0];
-  console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror); */
+  /*  const myUrl = new URL(window.location.toLocaleString()).searchParams;
+   console.log('myUrl', myUrl);
+   const nMirror = myUrl.getAll('mirror');
+   assignedMirror = nMirror[0];
+   console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror); */
 
   harmonicFactor
 
@@ -151,48 +153,66 @@ function setup() {
 
 function touchStarted() {
   userStartAudio();
-  if(!started){
+  if (!started) {
     test();
     started = true;
   } else {
     setNewFreq();
   }
-  
+
 
 }
 
 function draw() {
-/*   if (changeNote) {
-    currentFreq = freqCarr * harmonicFactor;
-    
-    changeNote = false;
-  } */
- 
-  
+  /*   if (changeNote) {
+      currentFreq = freqCarr * harmonicFactor;
+      
+      changeNote = false;
+    } */
+
+
   background(100);
   fft.analyze();
 
-  freqCarrEnergy = fft.getEnergy(freqCarr, freqCarr);
-  harm2Energy = fft.getEnergy(harm2freq, harm2freq);
-  harm3Energy = fft.getEnergy(harm3freq, harm3freq);
+  for (let i = 0; i < 5; i++) {
+    volumes[i] = fft.getEnergy(freqCarr * harmonicsArray[i]);
+  }
 
-  fill(255, 0, 0);
-  textSize(24)
-  textAlign(LEFT, TOP);
-  text(freqCarr + ' Hz: ' + freqCarrEnergy, 50, 50);
-  text(harm2freq + ' Hz: ' + harm2Energy, 50, 80);
-  text(harm3freq + ' Hz: ' + harm3Energy, 50, 110);
+  /*   freqCarrEnergy = fft.getEnergy(freqCarr, freqCarr);
+    harm2Energy = fft.getEnergy(harm2freq, harm2freq);
+    harm3Energy = fft.getEnergy(harm3freq, harm3freq); */
+
+
+  const initY = 50;
+  const offsetY = 30;
 
   const maxWidth = 100;
   const xVueMeters = 180;
-  stroke(0);
-  noFill();
-  rect(xVueMeters, 50, maxWidth, 20);
-  rect(xVueMeters, 80, maxWidth, 20);
+
+  for (let i = 0; i < 5; i++) {
+    const y = initY + offsetY * i
+    fill(255, 0, 0);
+    textSize(24)
+    textAlign(LEFT, TOP);
+    text(freqCarr * harmonicsArray[i] + ' Hz: ' + volumes[i], 50, y);
+    stroke(0);
+    noFill();
+    rect(xVueMeters, y, maxWidth, 20);
+    fill(0);
+    rect(xVueMeters, y, map(volumes[i], 0, 255, 0, maxWidth), 20);
+  }
+
+  /*   text(freqCarr + ' Hz: ' + freqCarrEnergy, 50, 50);
+    text(harm2freq + ' Hz: ' + harm2Energy, 50, 80);
+    text(harm3freq + ' Hz: ' + harm3Energy, 50, 110); */
+
+
+
+/*   rect(xVueMeters, 80, maxWidth, 20);
   rect(xVueMeters, 110, maxWidth, 20);
   fill(0);
 
-  rect(xVueMeters, 50, map(freqCarrEnergy, 0, 255, 0, maxWidth), 20);
+  
   rect(xVueMeters, 80, map(harm2Energy, 0, 255, 0, maxWidth), 20);
   rect(xVueMeters, 110, map(harm3Energy, 0, 255, 0, maxWidth), 20);
 
@@ -200,7 +220,7 @@ function draw() {
   textAlign(LEFT, TOP);
   text(assignedMirror, width / 2, height / 2 + 100);
 
-
+ */
   emit();
 
   let waveform = fft.waveform(); // analyze the waveform
@@ -241,30 +261,57 @@ function emit() {
     message.add(accX);
     osc.send(message); */
 
+    /* let arrayValObj = [];
+    arrayValObj.push({ // id
+      type: "s",
+      value: myId
+    });
+
+    console.log()
+
+    for(let i = 0; i < 5; i++){
+      arrayValObj.push({
+        type: "f",
+        value: volumes[i]
+      })
+    } */
+
+    // console.log(arrayValObj);
+
   socket.emit("data", {
     address: "/mobileData/" + assignedMirror,
-    args: [
+    args: [myId,assignedMirror,volumes[0], volumes[1],volumes[2],volumes[3],volumes[4]  ]
+    /* 
+    [
       { // id
         type: "s",
         value: myId
       },
       { // assignedMirror
-        type: "i",
+        type: "f",
         value: assignedMirror
       },
-      { // freqCarrEnergy
+      { 
         type: "f",
-        value: freqCarrEnergy
+        value: volumes[0]
       },
-      { // harm2Energy
+      { 
         type: "f",
-        value: harm2Energy
+        value: volumes[1]
       },
-      { // harm3Energy
+      { 
         type: "f",
-        value: harm3Energy
+        value: volumes[2]
+      },
+      { 
+        type: "f",
+        value: volumes[3]
+      },
+      { 
+        type: "f",
+        value: volumes[4]
       }
-    ]
+    ]  */
   });
 
   /* // old message
@@ -304,7 +351,8 @@ function setFreq(arg) {
 
 socket.on("setHarmonic", setHarm);
 function setHarm(_harm) {
-  harmonicFactor = _harm[assignedMirror];
+  harmonicsArray = _harm
+  harmonicFactor = harmonicsArray[assignedMirror];
   // changeNote = true;
   console.log('received new harmonic factor:', _harm, harmonicFactor);
 }
