@@ -123,12 +123,12 @@ io.on("connection", (socket) => {
 
     // console.log(data.assignedMirror);
     mirrorToSearch = data.assignedMirror;
-    /* function findIdByMirror(pair) {
-      return pair[1] === mirrorToSearch;
-    } */
+    // function findIdByMirror(pair) {
+    //   return pair[1] === mirrorToSearch;
+    // }
     if (mirrorsIds.length > 0) {
       let index = mirrorsIds.findIndex(findIdByMirror);
-      let id = mirrorsIds[index]/* [0] */;
+      let id = mirrorsIds[index];
       // console.log('id: ', id, ' mirror: ', mirrorToSearch);
 
       io.to( id).emit('mirror', data) // send to a specific id

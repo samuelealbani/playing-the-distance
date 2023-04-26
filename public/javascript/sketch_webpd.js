@@ -64,7 +64,7 @@ function draw(){
   rect(xVueMeters, 80, map(harm2Energy, 0, 255, 0, maxWidth), 20);
   rect(xVueMeters, 110, map(harm3Energy, 0, 255, 0, maxWidth), 20);
   
-  emit();
+  // emit();
   
   let waveform = fft.waveform(); // analyze the waveform
   beginShape();
@@ -107,7 +107,7 @@ function emit() {
       },
       { // freqCarrEnergy
         type: "f",
-        value: mouseY / height
+        value: freqCarrEnergy
       },
       { // harm2Energy
         type: "f",

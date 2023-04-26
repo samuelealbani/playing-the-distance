@@ -132,14 +132,15 @@ function setupSocket() {
 
 
   socket.on("mirror", (input) => {
+    console.log(input.assignedMirror);
     // console.log('receiving mirror', input.waveform);
     // console.log(input.assignedMirror === thisMirrorId);
-    waveform = input.waveform;
-/*     if (input.assignedMirror == thisMirrorId) {
-      
+    
+    if (input.assignedMirror == thisMirrorId) {
+      waveform = input.waveform;
     } else {
       //console.log('non è');
-    } */
+    }
 
     // drawWaveform();
   });
