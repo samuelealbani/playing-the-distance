@@ -1,3 +1,6 @@
+let wifiName = 'sam-wifi';
+let qrCodeImg;
+
 let freqCarr = 440;
 let tremoloFreq = 442;
 let harm2freq = 660;
@@ -53,6 +56,10 @@ function preload() {
   console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
   document.getElementById('idNumber').innerHTML = thisMirrorId;
 
+  const qrCodePath = '../images/' + wifiName + '_qrcode_mirror-voice_' + thisMirrorId + '.png';
+  console.log('loading qrcode', qrCodePath );
+
+  qrCodeImg = loadImage(qrCodePath);
 
 
   setupSocket();
@@ -101,6 +108,8 @@ function setup() {
 function draw() {
   background(255);
 
+  
+
   if ( isActive && waveform/* disconnectedFrame > 10  isReceiving  waveform */) {
     fill(0);
     beginShape();
@@ -113,8 +122,10 @@ function draw() {
     // console.log (waveform);
     endShape();
   } else {
-    fill(255, 0, 0);
-    rect(0, 0, width, height/2);
+/*     fill(255, 0, 0);
+    rect(0, 0, width, height/2); */
+
+    image(qrCodeImg, 0, 0);
   }
 
   if(!isReceiving){
