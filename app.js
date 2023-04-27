@@ -82,7 +82,7 @@ io.on("connection", (socket) => {
       reassignHarmonics();
     } else {
       mirrorsIds.push([socket.id, res[1]]); // store the socket.id with the number of mirror
-      console.log(socket.id, "is a mirror", res[1]);
+      console.log(socket.id, "is a mirror", res[1], 'mirrorsIds: ', mirrorsIds);
     }
   });
 
@@ -93,12 +93,34 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("disconnected", socket.id);
     if (voiceIds.includes(socket.id)) {
+      console.log('a so iche');
       const index = voiceIds.indexOf(socket.id);
       if (index !== -1) {
         voiceIds.splice(index, 1);
       }
-      reassignHarmonics();
+      // reassignHarmonics();
     }
+
+    
+    for(let i=0; i<mirrorsIds.length; i++){
+      console.log('myfor:' ,i);
+      if(mirrorsIds[i].includes(socket.id)){
+        console.log('this includes the id: ', socket.id);
+        mirrorsIds.splice(i, 1);
+        console.log('deleted element. Now mirrorsIds: ', mirrorsIds);
+      }
+    }
+
+
+    if (mirrorsIds.includes(socket.id)) {
+      const index = mirrorsIds.indexOf(socket.id);
+      if (index !== -1) {
+        mirrorsIds.splice(index, 1);
+      }
+      console.log('deleted from mirrorIds array');
+      // reassignHarmonics();
+    }
+
 
   });
 
@@ -127,7 +149,7 @@ io.on("connection", (socket) => {
     //   return pair[1] === mirrorToSearch;
     // }
     if (mirrorsIds.length > 0) {
-      let index = mirrorsIds.findIndex(findIdByMirror);
+      let index = mirrorsIds.findIndex(findIndexByMirror);
       let id = mirrorsIds[index];
       // console.log('id: ', id, ' mirror: ', mirrorToSearch);
 
@@ -149,8 +171,12 @@ io.on("connection", (socket) => {
 
 });
 
-function findIdByMirror(pair) {
+function findIndexByMirror(pair) {
   return pair[1] === mirrorToSearch;
+}
+
+function findIndexById(pair, _id) {
+  return pair[0] === _id;
 }
 
 function getIPAddresses() {
