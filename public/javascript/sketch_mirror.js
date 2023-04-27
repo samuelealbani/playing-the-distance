@@ -17,6 +17,10 @@ let currentFeq = 440;
 let audioStarted = false;
 let changeNote = false;
 
+
+let isReceiving = false;
+let disconnectedFrame = 0;
+
 // Create connection to Node.JS Server
 let socket; //  = io();
 //global variables
@@ -49,7 +53,7 @@ function preload() {
   console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
   document.getElementById('idNumber').innerHTML = thisMirrorId;
 
-  
+
 
   setupSocket();
 
@@ -97,7 +101,8 @@ function setup() {
 function draw() {
   background(255);
 
-  if (waveform) {
+  if ( /* disconnectedFrame > 10  */isReceiving /* waveform */) {
+    fill(0);
     beginShape();
     strokeWeight(5);
     for (let i = 0; i < waveform.length; i++) {
@@ -107,8 +112,16 @@ function draw() {
     }
     // console.log (waveform);
     endShape();
+  } else {
+    fill(255, 0, 0);
+    rect(0, 0, width, height/2);
   }
 
+  if(!isReceiving){
+    disconnectedFrame++;
+  }
+
+  isReceiving = false;
 
 }
 
@@ -135,9 +148,11 @@ function setupSocket() {
     // console.log(input.assignedMirror);
     // console.log('receiving mirror', input.waveform);
     // console.log(input.assignedMirror === thisMirrorId);
-    
+
     if (input.assignedMirror == thisMirrorId) {
       waveform = input.waveform;
+      isReceiving = true;
+      disconnectedFrame = 0;
       // console.log(input.waveform.length);
     } else {
       //console.log('non è');

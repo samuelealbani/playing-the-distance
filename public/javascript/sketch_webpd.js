@@ -98,7 +98,6 @@ const sendMsgToWebPd = (nodeId, portletId, message) => {
 /* ------------ */
 
 
-
 let mic;
 
 let harmonicFactor, harmonicsArray;
@@ -130,6 +129,10 @@ function setNewFreq() {
   sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
 }
 
+function setNewAmp() {
+  sendMsgToWebPd('n_0_2', '0', [0.9]);
+}
+
 function setup() {
   createCanvas(500, 500);
 
@@ -153,12 +156,16 @@ function setup() {
 
 function touchStarted() {
   userStartAudio();
-  if (!started) {
-    test();
-    started = true;
-  } else {
-    setNewFreq();
-  }
+  setNewFreq();
+    setNewAmp();
+    /* if (!started) {
+      setNewFreq();
+      setNewAmp();
+      // test();
+      started = true;
+    } else {
+      setNewFreq();
+    } */
 
 
 }
@@ -202,6 +209,10 @@ function draw() {
     rect(xVueMeters, y, map(volumes[i], 0, 255, 0, maxWidth), 20);
   }
 
+  textSize(160)
+  textAlign(LEFT, TOP);
+  text(assignedMirror, width / 2, height / 2 + 100);
+
   /*   text(freqCarr + ' Hz: ' + freqCarrEnergy, 50, 50);
     text(harm2freq + ' Hz: ' + harm2Energy, 50, 80);
     text(harm3freq + ' Hz: ' + harm3Energy, 50, 110); */
@@ -235,7 +246,7 @@ function draw() {
     reduced.push(waveform[i]);
   }
 
-  console.log('waveform.length', waveform.length, 'reduced.length', reduced.length);
+  // fconsole.log('waveform.length', waveform.length, 'reduced.length', reduced.length);
   /*   for (let i = 0; i < waveform.length; i++) {
       let x = map(i, 0, waveform.length, 0, width);
       let y = map(waveform[i], -1, 1, height, 0);
