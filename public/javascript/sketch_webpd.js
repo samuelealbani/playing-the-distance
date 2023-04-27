@@ -340,10 +340,12 @@ function emit() {
 //Events that we are listening for
 // Connect to Node.JS Server
 socket.on("connect", () => {
-  console.log(socket.id);
+  console.log(socket.id, 'assignedMirror: ', assignedMirror);
   myId = socket.id;
 
-  socket.emit("identification", [true, myId]);
+
+  socket.emit("identification", [true, myId, assignedMirror]);
+  
 });
 
 // Callback function on the event we disconnect

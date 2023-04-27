@@ -17,7 +17,7 @@ let currentFeq = 440;
 let audioStarted = false;
 let changeNote = false;
 
-
+let isActive = false;
 let isReceiving = false;
 let disconnectedFrame = 0;
 
@@ -101,7 +101,7 @@ function setup() {
 function draw() {
   background(255);
 
-  if ( /* disconnectedFrame > 10  */isReceiving /* waveform */) {
+  if ( isActive && waveform/* disconnectedFrame > 10  isReceiving  waveform */) {
     fill(0);
     beginShape();
     strokeWeight(5);
@@ -141,6 +141,11 @@ function setupSocket() {
   // Callback function on the event we disconnect
   socket.on("disconnect", () => {
     console.log(socket.id);
+  });
+
+  socket.on("activate", (_msg) => {
+    isActive = _msg;
+    console.log('mirror activation state: ', isActive );
   });
 
 
