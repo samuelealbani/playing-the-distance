@@ -67,7 +67,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(1920, 1080);
+  createCanvas(1200, 1080);
   rectMode(CENTER);
   angleMode(DEGREES);
 
@@ -125,7 +125,7 @@ function draw() {
 /*     fill(255, 0, 0);
     rect(0, 0, width, height/2); */
 
-    image(qrCodeImg, 0, 0);
+    image(qrCodeImg, width/2-qrCodeImg.width/2, height/2-qrCodeImg.height/2);
   }
 
   if(!isReceiving){
