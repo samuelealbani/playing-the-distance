@@ -45,7 +45,7 @@ const { Server } = require("socket.io");
 const io = new Server(server);
  */
 
-
+const number_of_voices = 3; // make it global for client or send it
 
 
 let staticServerPort = "4400";
@@ -64,7 +64,10 @@ app.use(express.static("public"));
 // Setup Our Node.js server to listen to connections from chrome, and open chrome when it is ready
 server.listen(staticServerPort, () => {
   console.log(`listening on *: ${staticServerPort}`);
-  // open("https://127.0.0.1:" + staticServerPort);
+  for(let i = 0; i < number_of_voices; i++){
+    open("https://127.0.0.1:" + staticServerPort +'/mirror.html?id=' + i); // open three browsers try pos and size
+    console.log(i);
+  }
 });
 
 // reassignHarmonics();
