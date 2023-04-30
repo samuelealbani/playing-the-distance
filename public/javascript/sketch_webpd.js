@@ -113,6 +113,8 @@ let currentFreq;
 let volumes = [];
 /* let assignedMirror; */
 
+let colorBackground, r, g, b;
+
 let started = false;
 
 const number_of_voices = 3;
@@ -153,17 +155,34 @@ function touchStarted() {
 
 function draw() {
 
-  if (operatingSystem === 'Android') {
-    background(255, 0, 0);
-  } else {
-    background(0, 255, 0);
-  }
+  
 
   fft.analyze();
 
   for (let i = 0; i < number_of_voices; i++) {
     volumes[i] = fft.getEnergy(freqCarr * harmonicsArray[i], freqCarr * harmonicsArray[i]);
   }
+
+  r = volumes[0];
+  g = volumes[1];
+  b = volumes[2];
+
+  console.log(r,g,b);
+
+  fill(255);
+  textSize(20);
+  text(r, 50, 100);
+  text(g, 50, 120);
+  text(b, 50, 120);
+
+  // if (operatingSystem === 'Android') {
+  //   background(255, 0, 0);
+  // } else {
+  //   background(0, 255, 0);
+  // }
+
+  background(r, g, b);
+
   const initY = 50;
   const offsetY = 30;
 
@@ -174,6 +193,7 @@ function draw() {
   for (let i = 0; i < number_of_voices; i++) {
     const y = initY + offsetY * i
     fill(255);
+    stroke(0);
     textSize(24)
     textAlign(LEFT, TOP);
     text(int(freqCarr * harmonicsArray[i]) + ' Hz: ' + volumes[i], 50, y);
