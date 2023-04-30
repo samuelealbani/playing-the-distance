@@ -1,3 +1,5 @@
+// const { text } = require("express");
+
 const myUrl = new URL(window.location.toLocaleString()).searchParams;
 console.log('myUrl', myUrl);
 const nMirror = myUrl.getAll('mirror');
@@ -6,7 +8,7 @@ console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror);
 
 const socket = io();
 
-let operatingSystem;
+
 /* ------------ */
 
 const loadingDiv = document.querySelector('#loading')
@@ -17,17 +19,34 @@ let patch = null
 let stream = null
 let webpdNode = null
 
-const initApp = async () => {
-  ;
-  // Register the worklet
-  await WebPdRuntime.registerWebPdWorkletNode(audioContext)
+let isP5 = false;
+/* const operatingSystem = getMobileOperatingSystem();
+console.log(operatingSystem); */
 
+
+const initApp = async () => {
+
+  // Register the worklet
+  await WebPdRuntime.registerWebPdWorkletNode(audioContext);
   // Fetch the patch code
   response = await fetch('webassembly/patch.wasm')
   patch = await response.arrayBuffer()
 
   // Get audio input
   stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+
+
+/*   if (operatingSystem != 'Android') {
+
+
+  } else {
+    isP5 = true;
+  } */
+
+
+
+
 
   // Hide loading and show start button
   loadingDiv.style.display = 'none'
@@ -41,7 +60,6 @@ const startApp = async () => {
   if (audioContext.state === 'suspended') {
     audioContext.resume();
   }
-
   // Setup web audio graph
   const sourceNode = audioContext.createMediaStreamSource(stream)
   webpdNode = new WebPdRuntime.WebPdWorkletNode(audioContext)
@@ -58,6 +76,10 @@ const startApp = async () => {
       wasmBuffer: patch,
     },
   })
+/*   if (operatingSystem != 'Android') {
+
+
+  } */
 
   // Hide the start button
   startButton.style.display = 'none'
@@ -154,8 +176,11 @@ function touchStarted() {
 }
 
 function draw() {
+  // console.log(operatingSystem);
 
-  
+
+
+
 
   fft.analyze();
 
@@ -167,13 +192,9 @@ function draw() {
   g = volumes[1];
   b = volumes[2];
 
-  console.log(r,g,b);
+  console.log(r, g, b);
 
-  fill(255);
-  textSize(20);
-  text(r, 50, 100);
-  text(g, 50, 120);
-  text(b, 50, 120);
+
 
   // if (operatingSystem === 'Android') {
   //   background(255, 0, 0);
@@ -208,6 +229,15 @@ function draw() {
   textAlign(LEFT, TOP);
   text(assignedMirror, width / 2, height / 2 + 100);
 
+  fill(255);
+  textSize(20);
+  text(r, 50, 300);
+  text(g, 50, 320);
+  text(b, 50, 340);
+  // text(operatingSystem, 50, 360);
+  // text(isP5, 50, 380);
+
+
   emit();
 
   let waveform = fft.waveform(); // analyze the waveform
@@ -223,12 +253,12 @@ function draw() {
   }
   endShape();
 
-    socket.emit("waveform", {
-      assignedMirror: assignedMirror,
-      waveform: /* waveform */  reduced
-    })
+  socket.emit("waveform", {
+    assignedMirror: assignedMirror,
+    waveform: /* waveform */  reduced
+  })
   // console.log (waveform);
-  
+
 }
 
 
@@ -236,7 +266,7 @@ function draw() {
 function emit() {
 
   let arrayValObj = [];
- 
+
   for (let i = 0; i < number_of_voices; i++) {
     arrayValObj.push(volumes[i])
   }
@@ -280,3 +310,23 @@ function setHarm(_harm) {
   console.log('received new harmonic factor:', _harm, harmonicFactor);
 }
 
+
+function getMobileOperatingSystem() {
+  var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+  // Windows Phone must come first because its UA also contains "Android"
+  if (/windows phone/i.test(userAgent)) {
+    return "Windows Phone";
+  }
+
+  if (/android/i.test(userAgent)) {
+    return "Android";
+  }
+
+  // iOS detection from: http://stackoverflow.com/a/9039885/177710
+  if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+    return "iOS";
+  }
+
+  return "boo";
+}
