@@ -4,8 +4,9 @@ const nMirror = myUrl.getAll('mirror');
 let assignedMirror = nMirror[0];
 console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror);
 
-
 const socket = io();
+
+let operatingSystem;
 /* ------------ */
 
 const loadingDiv = document.querySelector('#loading')
@@ -17,6 +18,7 @@ let stream = null
 let webpdNode = null
 
 const initApp = async () => {
+  ;
   // Register the worklet
   await WebPdRuntime.registerWebPdWorkletNode(audioContext)
 
@@ -25,7 +27,7 @@ const initApp = async () => {
   patch = await response.arrayBuffer()
 
   // Get audio input
-  stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+  stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
   // Hide loading and show start button
   loadingDiv.style.display = 'none'
@@ -37,7 +39,7 @@ const startApp = async () => {
   // from being spammed with autoplay.
   // See : https://github.com/WebAudio/web-audio-api/issues/345
   if (audioContext.state === 'suspended') {
-    audioContext.resume()
+    audioContext.resume();
   }
 
   // Setup web audio graph
@@ -50,7 +52,6 @@ const startApp = async () => {
   webpdNode.port.onmessage = (message) => WebPdRuntime.fs.web(webpdNode, message)
 
   // Send code to the worklet
-
   webpdNode.port.postMessage({
     type: 'code:WASM',
     payload: {
@@ -58,12 +59,8 @@ const startApp = async () => {
     },
   })
 
-
-
-
   // Hide the start button
   startButton.style.display = 'none'
-
 }
 
 startButton.onclick = startApp
@@ -97,8 +94,7 @@ const sendMsgToWebPd = (nodeId, portletId, message) => {
 
 /* ------------ */
 
-
-let mic;
+let mic, fft;
 
 let harmonicFactor, harmonicsArray;
 
@@ -119,12 +115,13 @@ let volumes = [];
 
 let started = false;
 
+const number_of_voices = 3;
 
-function test() {
+/* function test() {
   sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
   sendMsgToWebPd('n_0_2', '0', [0.3]);
 }
-
+ */
 function setNewFreq() {
   sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
 }
@@ -135,21 +132,14 @@ function setNewAmp() {
 
 function setup() {
   createCanvas(500, 500);
-
-
-
-  /*  const myUrl = new URL(window.location.toLocaleString()).searchParams;
-   console.log('myUrl', myUrl);
-   const nMirror = myUrl.getAll('mirror');
-   assignedMirror = nMirror[0];
-   console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror); */
-
-  harmonicFactor
-
+  osc = new p5.Oscillator();
+  osc.freq(4700);
+  osc.setType('sine');
+  osc.amp(0.5);
+  osc.start;
 
   mic = new p5.AudioIn();
   mic.start();
-
   fft = new p5.FFT();
   fft.setInput(mic);
 }
@@ -157,51 +147,36 @@ function setup() {
 function touchStarted() {
   userStartAudio();
   setNewFreq();
-    setNewAmp();
-    /* if (!started) {
-      setNewFreq();
-      setNewAmp();
-      // test();
-      started = true;
-    } else {
-      setNewFreq();
-    } */
-
-
+  setNewAmp();
+  osc.start;
 }
 
 function draw() {
-  /*   if (changeNote) {
-      currentFreq = freqCarr * harmonicFactor;
-      
-      changeNote = false;
-    } */
 
-
-  background(100);
-  fft.analyze();
-
-  for (let i = 0; i < 5; i++) {
-    volumes[i] = fft.getEnergy(freqCarr * harmonicsArray[i]);
+  if (operatingSystem === 'Android') {
+    background(255, 0, 0);
+  } else {
+    background(0, 255, 0);
   }
 
-  /*   freqCarrEnergy = fft.getEnergy(freqCarr, freqCarr);
-    harm2Energy = fft.getEnergy(harm2freq, harm2freq);
-    harm3Energy = fft.getEnergy(harm3freq, harm3freq); */
+  fft.analyze();
 
-
+  for (let i = 0; i < number_of_voices; i++) {
+    volumes[i] = fft.getEnergy(freqCarr * harmonicsArray[i], freqCarr * harmonicsArray[i]);
+  }
   const initY = 50;
   const offsetY = 30;
 
   const maxWidth = 100;
   const xVueMeters = 180;
 
-  for (let i = 0; i < 5; i++) {
+  text()
+  for (let i = 0; i < number_of_voices; i++) {
     const y = initY + offsetY * i
-    fill(255, 0, 0);
+    fill(255);
     textSize(24)
     textAlign(LEFT, TOP);
-    text(freqCarr * harmonicsArray[i] + ' Hz: ' + volumes[i], 50, y);
+    text(int(freqCarr * harmonicsArray[i]) + ' Hz: ' + volumes[i], 50, y);
     stroke(0);
     noFill();
     rect(xVueMeters, y, maxWidth, 20);
@@ -213,25 +188,6 @@ function draw() {
   textAlign(LEFT, TOP);
   text(assignedMirror, width / 2, height / 2 + 100);
 
-  /*   text(freqCarr + ' Hz: ' + freqCarrEnergy, 50, 50);
-    text(harm2freq + ' Hz: ' + harm2Energy, 50, 80);
-    text(harm3freq + ' Hz: ' + harm3Energy, 50, 110); */
-
-
-
-/*   rect(xVueMeters, 80, maxWidth, 20);
-  rect(xVueMeters, 110, maxWidth, 20);
-  fill(0);
-
-  
-  rect(xVueMeters, 80, map(harm2Energy, 0, 255, 0, maxWidth), 20);
-  rect(xVueMeters, 110, map(harm3Energy, 0, 255, 0, maxWidth), 20);
-
-  textSize(160)
-  textAlign(LEFT, TOP);
-  text(assignedMirror, width / 2, height / 2 + 100);
-
- */
   emit();
 
   let waveform = fft.waveform(); // analyze the waveform
@@ -245,96 +201,30 @@ function draw() {
     vertex(x, y);
     reduced.push(waveform[i]);
   }
-
-  // fconsole.log('waveform.length', waveform.length, 'reduced.length', reduced.length);
-  /*   for (let i = 0; i < waveform.length; i++) {
-      let x = map(i, 0, waveform.length, 0, width);
-      let y = map(waveform[i], -1, 1, height, 0);
-      vertex(x, y);
-    } */
-
-
-  // console.log('emitting');
-  if (frameCount % 10 === 0) {
-    ;
-  }
-
-  socket.emit("waveform", {
-    assignedMirror: assignedMirror,
-    waveform: /* waveform */ reduced
-  })
-  // console.log (waveform);
   endShape();
+
+    socket.emit("waveform", {
+      assignedMirror: assignedMirror,
+      waveform: /* waveform */  reduced
+    })
+  // console.log (waveform);
+  
 }
 
+
+
 function emit() {
-  /*   let message = new OSC.Message("/test/values/mobileAccX");
-    message.add(accX);
-    osc.send(message); */
 
-    /* let arrayValObj = [];
-    arrayValObj.push({ // id
-      type: "s",
-      value: myId
-    });
-
-    console.log()
-
-    for(let i = 0; i < 5; i++){
-      arrayValObj.push({
-        type: "f",
-        value: volumes[i]
-      })
-    } */
-
-    // console.log(arrayValObj);
+  let arrayValObj = [];
+ 
+  for (let i = 0; i < number_of_voices; i++) {
+    arrayValObj.push(volumes[i])
+  }
 
   socket.emit("data", {
     address: "/mobileData/" + assignedMirror,
-    args: [myId,assignedMirror,volumes[0], volumes[1],volumes[2],volumes[3],volumes[4]  ]
-    /* 
-    [
-      { // id
-        type: "s",
-        value: myId
-      },
-      { // assignedMirror
-        type: "f",
-        value: assignedMirror
-      },
-      { 
-        type: "f",
-        value: volumes[0]
-      },
-      { 
-        type: "f",
-        value: volumes[1]
-      },
-      { 
-        type: "f",
-        value: volumes[2]
-      },
-      { 
-        type: "f",
-        value: volumes[3]
-      },
-      { 
-        type: "f",
-        value: volumes[4]
-      }
-    ]  */
-  });
-
-  /* // old message
-  socket.emit("data", {
-    myId: myId,
-    freqCarrEnergy: freqCarrEnergy,
-    harm2Energy: harm2Energy,
-    harm3Energy: harm3Energy,
-    mobileLeftToRight: leftToRight
-  }); */
-
-  //console.log("emitting");
+    args: arrayValObj
+  })
 }
 
 //Events that we are listening for
@@ -345,7 +235,7 @@ socket.on("connect", () => {
 
 
   socket.emit("identification", [true, myId, assignedMirror]);
-  
+
 });
 
 // Callback function on the event we disconnect

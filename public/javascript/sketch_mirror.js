@@ -1,4 +1,4 @@
-let wifiName = 'sam-wifi';
+let wifiName = '1.118'; // sam-wifi // 1.118
 let qrCodeImg;
 
 let freqCarr = 440;
@@ -56,7 +56,18 @@ function preload() {
   console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
   document.getElementById('idNumber').innerHTML = thisMirrorId;
 
-  const qrCodePath = '../images/' + wifiName + '_qrcode_mirror-voice_' + thisMirrorId + '.png';
+
+  let qrCodePath;
+
+  // solo per docum
+  if(thisMirrorId === '1'){
+    qrCodePath = '../images/' + wifiName + '/' + wifiName + '_qrcode_note_' + thisMirrorId + '.png';
+    console.log(qrCodePath);
+  } else {
+    qrCodePath = '../images/' + wifiName + '/' + wifiName + '_qrcode_mirror-voice_' + thisMirrorId + '.png';
+
+  }
+
   console.log('loading qrcode', qrCodePath );
 
   qrCodeImg = loadImage(qrCodePath);
@@ -67,7 +78,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(1200, 1080);
+  createCanvas(400, 600);
   rectMode(CENTER);
   angleMode(DEGREES);
 
@@ -169,7 +180,7 @@ function setupSocket() {
       waveform = input.waveform;
       isReceiving = true;
       disconnectedFrame = 0;
-      // console.log(input.waveform.length);
+      console.log(input.waveform.length);
     } else {
       //console.log('non è');
     }

@@ -55,8 +55,8 @@ let oscRecievePort = "9129";
 let sendIP = "127.0.0.1";//localhost
 let oscSendPort = "9130";
 
-const freqIntervals = [1, 2, 3, 5, 7];
-let carrierFreq = 100;
+const freqIntervals = [1, 1.33, 1.779, 5, 7];
+let carrierFreq = 330;
 
 // Tell our Node.js Server to host our P5.JS sketch from the public folder.
 app.use(express.static("public"));
