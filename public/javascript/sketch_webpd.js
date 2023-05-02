@@ -13,7 +13,7 @@ const number_of_voices = 3;
 
 let r, g, b;
 
-const debug = true;
+const debug = false;
 
 const loadingDiv = document.querySelector('#loading')
 const startButton = document.querySelector('#start')
@@ -117,13 +117,6 @@ function setNewAmp() {
 function setup() {
   createCanvas(500, 500);
 
-  // pulisci in ios
-/*   osc = new p5.Oscillator();
-  osc.freq(4700);
-  osc.setType('sine');
-  osc.amp(0.5);
-  osc.start; */
-
   mic = new p5.AudioIn();
   mic.start();
   fft = new p5.FFT();
@@ -134,8 +127,9 @@ function touchStarted() {
   userStartAudio();
   setNewFreq();
   setNewAmp();
-  // osc.start;
+  started=true;
 }
+
 
 function draw() {
 
@@ -161,7 +155,6 @@ function draw() {
   const maxWidth = 100;
   const xVueMeters = 180;
 
-  text()
   for (let i = 0; i < number_of_voices; i++) {
     const y = initY + offsetY * i
     fill(255);
@@ -176,21 +169,35 @@ function draw() {
     rect(xVueMeters, y, map(volumes[i], 0, 255, 0, maxWidth), 20);
   }
 
-  textSize(160)
-  textAlign(LEFT, TOP);
-  text(assignedMirror, width / 2, height / 2 + 100);
+  if(!started){
+    textSize(30)
+    textAlign(CENTER);
+    /* stroke(255); */
+    strokeWeight(1);
+    fill(255);
+    text('Touch to activate ', width / 2, height / 2 + 100);
+  }
 
-  fill(255);
-  textSize(20);
-  text(r, 50, 300);
-  text(g, 50, 320);
-  text(b, 50, 340);
+  if(debug){ // show information on screen
+    textSize(160)
+    textAlign(LEFT, TOP);
+    text(assignedMirror, width / 2, height / 2 + 100);
+  
+    fill(255);
+    textSize(20);
+    text(r, 50, 300);
+    text(g, 50, 320);
+    text(b, 50, 340);
+  }
  
   emitDistances();
 
   let waveform = fft.waveform(); // analyze the waveform
-
   let reducedWaveform = [];
+
+  fill(0);
+  stroke(0);
+  strokeWeight(2);
   beginShape();
   strokeWeight(5);
   for (let i = 0; i < waveform.length; i += 16) {
@@ -207,9 +214,7 @@ function draw() {
   })
 }
 
-
 function emitDistances() {
-
   let arrayValObj = [];
 
   for (let i = 0; i < number_of_voices; i++) {
@@ -227,19 +232,10 @@ function emitDistances() {
 socket.on("connect", () => {
   console.log(socket.id, 'assignedMirror: ', assignedMirror);
   myId = socket.id;
-
-
   socket.emit("identification", [true, myId, assignedMirror]);
-
-});
-
-// Callback function on the event we disconnect
-socket.on("disconnect", () => {
-  console.log(socket.id);
 });
 
 socket.on("setFrequency", setFreq);
-
 function setFreq(arg) {
   freqCarr = arg;
   console.log('received carrier frequency', freqCarr);
@@ -252,23 +248,8 @@ function setHarm(_harm) {
   console.log('received new harmonic factor:', _harm, harmonicFactor);
 }
 
+// Callback function on the event we disconnect
+socket.on("disconnect", () => {
+  console.log(socket.id);
+});
 
-/* function getMobileOperatingSystem() {
-  var userAgent = navigator.userAgent || navigator.vendor || window.opera;
-
-  // Windows Phone must come first because its UA also contains "Android"
-  if (/windows phone/i.test(userAgent)) {
-    return "Windows Phone";
-  }
-
-  if (/android/i.test(userAgent)) {
-    return "Android";
-  }
-
-  // iOS detection from: http://stackoverflow.com/a/9039885/177710
-  if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-    return "iOS";
-  }
-
-  return "unknown OS";
-} */
