@@ -1,17 +1,43 @@
 let patch = null
 let stream = null
 let webpdNode = null
+let started = false;
+
+let mic, fft;
+
+let harmonicFactor, harmonicsArray;
+let volumes = [];
+let freqCarr;
+
+const number_of_voices = 3;
+
+let r, g, b;
+
+/* let tremoloFreq = 442;
+let harm2freq = 660;
+let harm3freq = 880; 
+
+let freqCarrEnergy;
+let tremFreqEnergy;
+let harm2Energy;
+let harm3Energy;
+
+let currentFreq;
+
+let assignedMirror;
+
+let colorBackground;
+*/
+
 
 const loadingDiv = document.querySelector('#loading')
 const startButton = document.querySelector('#start')
 const audioContext = new AudioContext()
 
-let isP5 = false;
-
 const myUrl = new URL(window.location.toLocaleString()).searchParams;
 console.log('myUrl', myUrl);
 const nMirror = myUrl.getAll('mirror');
-let assignedMirror = nMirror[0];
+const assignedMirror = nMirror[0];
 console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror);
 document.title = 'Playing Voice ' + assignedMirror; // change dynamically the title
 
@@ -96,30 +122,7 @@ const sendMsgToWebPd = (nodeId, portletId, message) => {
 //[end] WebPD auto generated code
 /* ------------ */
 
-let mic, fft;
 
-let harmonicFactor, harmonicsArray;
-
-let freqCarr;
-let tremoloFreq = 442;
-let harm2freq = 660;
-let harm3freq = 880;
-
-let freqCarrEnergy;
-let tremFreqEnergy;
-let harm2Energy;
-let harm3Energy;
-
-let currentFreq;
-
-let volumes = [];
-/* let assignedMirror; */
-
-let colorBackground, r, g, b;
-
-let started = false;
-
-const number_of_voices = 3;
 
 
 function setNewFreq() {
