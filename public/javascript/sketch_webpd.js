@@ -130,7 +130,6 @@ function touchStarted() {
   started=true;
 }
 
-
 function draw() {
 
   fft.analyze();
@@ -252,4 +251,3 @@ function setHarm(_harm) {
 socket.on("disconnect", () => {
   console.log(socket.id);
 });
-
