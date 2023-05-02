@@ -1,3 +1,7 @@
+/* ------- */
+
+// tested with iPhone 8 running iOS 16.4.1
+
 // to open this page you need to visit the page:
 // https://your-ip-address:4400/webpd.html?mirror=1
 // change the value of the mirror to change the assigned 
@@ -5,6 +9,8 @@
 // PS
 // the qr code loaded on the mirror does contain my current IP
 // this might not work for you
+
+/* ------- */
 
 let patch = null
 let stream = null
