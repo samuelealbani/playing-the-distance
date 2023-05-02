@@ -1,53 +1,12 @@
 let wifiName = 'sam-wifi'; // sam-wifi // 1.118
+
 let qrCodeImg;
 let debug = false;
 
-/* let freqCarr = 440;
-let tremoloFreq = 442;
-let harm2freq = 660;
-let harm3freq = 880;
-
-let freqCarrEnergy;
-let tremFreqEnergy;
-let harm2Energy;
-let harm3Energy; 
-
-let harmonicFactor;
-
-let oscillator, mic, fft;
-
-let currentFeq = 440;
-
-let audioStarted = false;
-let changeNote = false;
-
-let disconnectedFrame = 0;
-
-//global variables
-let askButton;
-
-// device motion
-let accX = 0;
-let accY = 0;
-let accZ = 0;
-let rrateX = 0;
-let rrateY = 0;
-let rrateZ = 0;
-
-// device orientation
-let rotateDegrees = 0;
-let frontToBack = 0;
-let leftToRight = 0;
-
-let mobileDevice = false;
-
-*/
+let socket; 
 
 let isActive = false;
 let isReceiving = false;
-
-// Create connection to Node.JS Server
-let socket; 
 
 let waveform;
 
@@ -58,7 +17,7 @@ function preload() {
   console.log('myUrl', myUrl);
   const arg = myUrl.getAll('id');
   thisMirrorId = arg[0];
-  document.title = 'Mirror ' + thisMirrorId;
+  document.title = 'Mirror ' + thisMirrorId; // change dynamically the title
 
   if(debug){
     console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
@@ -73,7 +32,6 @@ function preload() {
     console.log(qrCodePath);
   } else {
     qrCodePath = '../images/' + wifiName + '/' + wifiName + '_qrcode_mirror-voice_' + thisMirrorId + '.png';
-
   }
 
   if(debug) {
@@ -81,7 +39,6 @@ function preload() {
   }
 
   qrCodeImg = loadImage(qrCodePath);
-
   setupSocket();
 }
 
@@ -90,8 +47,6 @@ function setup() {
   rectMode(CENTER);
   angleMode(DEGREES);
 }
-
-
 
 //we are using p5.js to visualise this movement data
 function draw() {
@@ -111,16 +66,12 @@ function draw() {
     image(qrCodeImg, width/2-qrCodeImg.width/2, height/2-qrCodeImg.height/2);
   }
 
-/*   if(!isReceiving){
-    disconnectedFrame++;
-  } */
-
   isReceiving = false;
 }
 
 
 function setupSocket() {
-  //Events that we are listening for
+  // Events that we are listening for
   // Connect to Node.JS Server
   socket = io();
   socket.on("connect", () => {
@@ -142,10 +93,7 @@ function setupSocket() {
     if (input.assignedMirror == thisMirrorId) {
       waveform = input.waveform;
       isReceiving = true;
-      //disconnectedFrame = 0;
       console.log(input.waveform.length);
-    } else {
-
-    }
+    } 
   });
 }
