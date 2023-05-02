@@ -5,6 +5,7 @@ console.log('myUrl', myUrl);
 const nMirror = myUrl.getAll('mirror');
 let assignedMirror = nMirror[0];
 console.log('nMirror:', nMirror, 'assignedMirror:', assignedMirror);
+document.title = 'Playing Voice ' + assignedMirror; // change dynamically the title
 
 const socket = io();
 
