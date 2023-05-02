@@ -1,4 +1,12 @@
-// const { text } = require("express");
+let patch = null
+let stream = null
+let webpdNode = null
+
+const loadingDiv = document.querySelector('#loading')
+const startButton = document.querySelector('#start')
+const audioContext = new AudioContext()
+
+let isP5 = false;
 
 const myUrl = new URL(window.location.toLocaleString()).searchParams;
 console.log('myUrl', myUrl);
@@ -9,21 +17,8 @@ document.title = 'Playing Voice ' + assignedMirror; // change dynamically the ti
 
 const socket = io();
 
-
 /* ------------ */
-
-const loadingDiv = document.querySelector('#loading')
-const startButton = document.querySelector('#start')
-const audioContext = new AudioContext()
-
-let patch = null
-let stream = null
-let webpdNode = null
-
-let isP5 = false;
-/* const operatingSystem = getMobileOperatingSystem();
-console.log(operatingSystem); */
-
+// WebPD auto generated code:
 
 const initApp = async () => {
 
@@ -35,19 +30,6 @@ const initApp = async () => {
 
   // Get audio input
   stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-
-
-/*   if (operatingSystem != 'Android') {
-
-
-  } else {
-    isP5 = true;
-  } */
-
-
-
-
 
   // Hide loading and show start button
   loadingDiv.style.display = 'none'
@@ -77,10 +59,6 @@ const startApp = async () => {
       wasmBuffer: patch,
     },
   })
-/*   if (operatingSystem != 'Android') {
-
-
-  } */
 
   // Hide the start button
   startButton.style.display = 'none'
@@ -115,6 +93,7 @@ const sendMsgToWebPd = (nodeId, portletId, message) => {
 //     - Node of type "floatatom", nodeId "n_0_3", portletId "0"
 //     - Node of type "floatatom", nodeId "n_0_4", portletId "0"
 
+//[end] WebPD auto generated code
 /* ------------ */
 
 let mic, fft;
@@ -142,11 +121,7 @@ let started = false;
 
 const number_of_voices = 3;
 
-/* function test() {
-  sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
-  sendMsgToWebPd('n_0_2', '0', [0.3]);
-}
- */
+
 function setNewFreq() {
   sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
 }
@@ -179,11 +154,6 @@ function touchStarted() {
 }
 
 function draw() {
-  // console.log(operatingSystem);
-
-
-
-
 
   fft.analyze();
 
@@ -198,12 +168,6 @@ function draw() {
   console.log(r, g, b);
 
 
-
-  // if (operatingSystem === 'Android') {
-  //   background(255, 0, 0);
-  // } else {
-  //   background(0, 255, 0);
-  // }
 
   background(r, g, b);
 
@@ -237,10 +201,7 @@ function draw() {
   text(r, 50, 300);
   text(g, 50, 320);
   text(b, 50, 340);
-  // text(operatingSystem, 50, 360);
-  // text(isP5, 50, 380);
-
-
+ 
   emit();
 
   let waveform = fft.waveform(); // analyze the waveform
@@ -260,10 +221,7 @@ function draw() {
     assignedMirror: assignedMirror,
     waveform: /* waveform */  reduced
   })
-  // console.log (waveform);
-
 }
-
 
 
 function emit() {
@@ -296,12 +254,10 @@ socket.on("disconnect", () => {
   console.log(socket.id);
 });
 
-
 socket.on("setFrequency", setFreq);
 
 function setFreq(arg) {
   freqCarr = arg;
-  // changeNote = true;
   console.log('received carrier frequency', freqCarr);
 }
 
@@ -309,7 +265,6 @@ socket.on("setHarmonic", setHarm);
 function setHarm(_harm) {
   harmonicsArray = _harm
   harmonicFactor = harmonicsArray[assignedMirror];
-  // changeNote = true;
   console.log('received new harmonic factor:', _harm, harmonicFactor);
 }
 
@@ -331,5 +286,5 @@ function getMobileOperatingSystem() {
     return "iOS";
   }
 
-  return "boo";
+  return "unknown OS";
 }
