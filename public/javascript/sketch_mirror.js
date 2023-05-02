@@ -1,7 +1,8 @@
-let wifiName = '1.118'; // sam-wifi // 1.118
+let wifiName = 'sam-wifi'; // sam-wifi // 1.118
 let qrCodeImg;
+let debug = false;
 
-let freqCarr = 440;
+/* let freqCarr = 440;
 let tremoloFreq = 442;
 let harm2freq = 660;
 let harm3freq = 880;
@@ -9,7 +10,7 @@ let harm3freq = 880;
 let freqCarrEnergy;
 let tremFreqEnergy;
 let harm2Energy;
-let harm3Energy;
+let harm3Energy; 
 
 let harmonicFactor;
 
@@ -20,12 +21,8 @@ let currentFeq = 440;
 let audioStarted = false;
 let changeNote = false;
 
-let isActive = false;
-let isReceiving = false;
 let disconnectedFrame = 0;
 
-// Create connection to Node.JS Server
-let socket; //  = io();
 //global variables
 let askButton;
 
@@ -44,6 +41,14 @@ let leftToRight = 0;
 
 let mobileDevice = false;
 
+*/
+
+let isActive = false;
+let isReceiving = false;
+
+// Create connection to Node.JS Server
+let socket; 
+
 let waveform;
 
 let thisMirrorId;
@@ -53,13 +58,16 @@ function preload() {
   console.log('myUrl', myUrl);
   const arg = myUrl.getAll('id');
   thisMirrorId = arg[0];
-  console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
-  document.getElementById('idNumber').innerHTML = thisMirrorId;
+  document.title = 'Mirror ' + thisMirrorId;
 
+  if(debug){
+    console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
+    document.getElementById('idNumber').innerHTML = thisMirrorId;
+  }
 
   let qrCodePath;
 
-  // solo per docum
+  // !!!!solo per docum test with android
   if(thisMirrorId === '1'){
     qrCodePath = '../images/' + wifiName + '/' + wifiName + '_qrcode_note_' + thisMirrorId + '.png';
     console.log(qrCodePath);
@@ -68,60 +76,28 @@ function preload() {
 
   }
 
-  console.log('loading qrcode', qrCodePath );
+  if(debug) {
+    console.log('loading qrcode', qrCodePath );
+  }
 
   qrCodeImg = loadImage(qrCodePath);
 
-
   setupSocket();
-
 }
 
 function setup() {
   createCanvas(400, 600);
   rectMode(CENTER);
   angleMode(DEGREES);
-
-
-
-  /*   //----------
-    //the bit between the two comment lines could be move to a three.js sketch except you'd need to create a button there
-    if (typeof DeviceMotionEvent.requestPermission === 'function' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-      // iOS 13+
-      askButton = createButton('Permission');//p5 create button
-      askButton.mousePressed(handlePermissionButtonPressed);//p5 listen to mousePressed event
-    } else {
-      //if there is a device that doesn't require permission
-      window.addEventListener('devicemotion', deviceMotionHandler, true);
-      window.addEventListener('deviceorientation', deviceTurnedHandler, true)
-    }
-  
-    //----------
-    oscillator = new p5.Oscillator(); // set frequency and type
-    oscillator.amp(0.8);
-    oscillator.freq(20);
-  
-    mic = new p5.AudioIn();
-    mic.start();
-    fft = new p5.FFT();
-    fft.setInput(mic); */
 }
 
-/* function touchStarted() {
-  if (!audioStarted) {
-    userStartAudio();
-    oscillator.start();
-    audioStarted = true;
-  }
-} */
+
 
 //we are using p5.js to visualise this movement data
 function draw() {
   background(255);
 
-  
-
-  if ( isActive && waveform/* disconnectedFrame > 10  isReceiving  waveform */) {
+  if ( isActive && waveform ) {
     fill(0);
     beginShape();
     strokeWeight(5);
@@ -130,24 +106,17 @@ function draw() {
       let y = map(waveform[i], -1, 1, height, 0);
       vertex(x, y);
     }
-    // console.log (waveform);
     endShape();
   } else {
-/*     fill(255, 0, 0);
-    rect(0, 0, width, height/2); */
-
     image(qrCodeImg, width/2-qrCodeImg.width/2, height/2-qrCodeImg.height/2);
   }
 
-  if(!isReceiving){
+/*   if(!isReceiving){
     disconnectedFrame++;
-  }
+  } */
 
   isReceiving = false;
-
 }
-
-
 
 
 function setupSocket() {
@@ -157,7 +126,6 @@ function setupSocket() {
   socket.on("connect", () => {
     console.log('my socket.id: ', socket.id, 'sending', [false, thisMirrorId]);
     socket.emit("identification", [false, thisMirrorId]);
-    // myId = socket.id;
   });
 
   // Callback function on the event we disconnect
@@ -170,23 +138,14 @@ function setupSocket() {
     console.log('mirror activation state: ', isActive );
   });
 
-
   socket.on("mirror", (input) => {
-    // console.log(input.assignedMirror);
-    // console.log('receiving mirror', input.waveform);
-    // console.log(input.assignedMirror === thisMirrorId);
-
     if (input.assignedMirror == thisMirrorId) {
       waveform = input.waveform;
       isReceiving = true;
-      disconnectedFrame = 0;
+      //disconnectedFrame = 0;
       console.log(input.waveform.length);
     } else {
-      //console.log('non è');
+
     }
-
-    // drawWaveform();
   });
-
-
 }
