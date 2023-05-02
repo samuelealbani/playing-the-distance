@@ -13,22 +13,7 @@ const number_of_voices = 3;
 
 let r, g, b;
 
-/* let tremoloFreq = 442;
-let harm2freq = 660;
-let harm3freq = 880; 
-
-let freqCarrEnergy;
-let tremFreqEnergy;
-let harm2Energy;
-let harm3Energy;
-
-let currentFreq;
-
-let assignedMirror;
-
-let colorBackground;
-*/
-
+const debug = true;
 
 const loadingDiv = document.querySelector('#loading')
 const startButton = document.querySelector('#start')
@@ -94,7 +79,6 @@ startButton.onclick = startApp
 
 initApp().
   then(() => {
-    // set initial freq
     console.log('App initialized')
   })
 
@@ -122,9 +106,6 @@ const sendMsgToWebPd = (nodeId, portletId, message) => {
 //[end] WebPD auto generated code
 /* ------------ */
 
-
-
-
 function setNewFreq() {
   sendMsgToWebPd('n_0_1', '0', [freqCarr * harmonicFactor]);
 }
@@ -137,11 +118,11 @@ function setup() {
   createCanvas(500, 500);
 
   // pulisci in ios
-  osc = new p5.Oscillator();
+/*   osc = new p5.Oscillator();
   osc.freq(4700);
   osc.setType('sine');
   osc.amp(0.5);
-  osc.start;
+  osc.start; */
 
   mic = new p5.AudioIn();
   mic.start();
@@ -153,7 +134,7 @@ function touchStarted() {
   userStartAudio();
   setNewFreq();
   setNewAmp();
-  osc.start;
+  // osc.start;
 }
 
 function draw() {
@@ -168,9 +149,9 @@ function draw() {
   g = volumes[1];
   b = volumes[2];
 
-  console.log(r, g, b);
-
-
+  if(debug){
+    console.log(r, g, b);
+  }
 
   background(r, g, b);
 
@@ -205,29 +186,29 @@ function draw() {
   text(g, 50, 320);
   text(b, 50, 340);
  
-  emit();
+  emitDistances();
 
   let waveform = fft.waveform(); // analyze the waveform
 
-  let reduced = [];
+  let reducedWaveform = [];
   beginShape();
   strokeWeight(5);
   for (let i = 0; i < waveform.length; i += 16) {
     let x = map(i, 0, waveform.length, 0, width);
     let y = map(waveform[i], -1, 1, height, 0);
     vertex(x, y);
-    reduced.push(waveform[i]);
+    reducedWaveform.push(waveform[i]);
   }
   endShape();
 
   socket.emit("waveform", {
     assignedMirror: assignedMirror,
-    waveform: /* waveform */  reduced
+    waveform: reducedWaveform
   })
 }
 
 
-function emit() {
+function emitDistances() {
 
   let arrayValObj = [];
 
@@ -272,7 +253,7 @@ function setHarm(_harm) {
 }
 
 
-function getMobileOperatingSystem() {
+/* function getMobileOperatingSystem() {
   var userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
   // Windows Phone must come first because its UA also contains "Android"
@@ -290,4 +271,4 @@ function getMobileOperatingSystem() {
   }
 
   return "unknown OS";
-}
+} */
