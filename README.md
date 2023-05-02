@@ -10,12 +10,15 @@
 
 ## Run
 1. NodeJs Server
-$ node app.js
+
+- $ node app.js
 
 2. Wekinator
-run _wekinator
-open the project "WCC2_final-project_WekinatorProject.wekproj"
-start listening osc
+
+- run _wekinator
+- open the project "WCC2_final-project_WekinatorProject.wekproj"
+- start listening osc
 
 3. Max/MSP
-run _main.maxpat
+
+- run _main.maxpat
