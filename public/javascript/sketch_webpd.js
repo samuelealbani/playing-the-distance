@@ -156,6 +156,8 @@ function setNewAmp() {
 
 function setup() {
   createCanvas(500, 500);
+
+  // pulisci in ios
   osc = new p5.Oscillator();
   osc.freq(4700);
   osc.setType('sine');
