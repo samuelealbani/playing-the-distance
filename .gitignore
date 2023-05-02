@@ -3,3 +3,6 @@
 /public/audio
 /public/images
 /.vscode
+.DS_Store
+.DS_Store?
+**/.DS_Store
