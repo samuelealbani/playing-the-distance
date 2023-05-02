@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 148.0, 165.0, 1197.0, 688.0 ],
+		"rect" : [ 573.0, 113.0, 905.0, 688.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -40,9 +40,21 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-19",
+					"maxclass" : "button",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "bang" ],
+					"parameter_enable" : 0,
+					"patching_rect" : [ 142.0, 275.0, 24.0, 24.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"comment" : "",
 					"id" : "obj-37",
-					"index" : 0,
+					"index" : 1,
 					"maxclass" : "outlet",
 					"numinlets" : 1,
 					"numoutlets" : 0,
@@ -83,7 +95,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 373.0, 534.0, 204.5, 22.0 ],
-					"text" : "/wek/inputs 46. 84. 154. 74. 68. 1."
+					"text" : "/wek/inputs 24. 19. 63. 0. 0. 0."
 				}
 
 			}
@@ -131,7 +143,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 57.0, 459.0, 172.0, 22.0 ],
-					"text" : "46. 84. 154. 74. 68. 1."
+					"text" : "24. 19. 63. 0. 0. 0."
 				}
 
 			}
@@ -150,13 +162,13 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-21",
-					"linecount" : 3,
+					"linecount" : 4,
 					"maxclass" : "message",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 750.0, 602.0, 116.0, 49.0 ],
-					"text" : "0.151947 0.961056 0.622022 0.056982 0.350188 0.073388"
+					"patching_rect" : [ 750.0, 602.0, 116.0, 62.0 ],
+					"text" : "0.270396 0.62231 0.155168 0.907731 -0.01993 0.552035 0.683966 0.189584"
 				}
 
 			}
@@ -179,7 +191,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 728.5, 388.0, 50.0, 22.0 ],
-					"text" : "1."
+					"text" : "0."
 				}
 
 			}
@@ -191,7 +203,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 697.5, 355.0, 50.0, 22.0 ],
-					"text" : "68."
+					"text" : "0."
 				}
 
 			}
@@ -215,7 +227,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 517.5, 335.0, 50.0, 22.0 ],
-					"text" : "76"
+					"text" : "0"
 				}
 
 			}
@@ -227,7 +239,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 452.5, 335.0, 50.0, 22.0 ],
-					"text" : "154."
+					"text" : "63."
 				}
 
 			}
@@ -239,7 +251,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 336.5, 372.0, 50.0, 22.0 ],
-					"text" : "84"
+					"text" : "19"
 				}
 
 			}
@@ -251,7 +263,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 278.5, 372.0, 50.0, 22.0 ],
-					"text" : "46."
+					"text" : "24."
 				}
 
 			}
@@ -287,7 +299,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 744.0, 277.0, 99.0, 22.0 ],
-					"text" : "68. 1. 140."
+					"text" : "0. 0. 84."
 				}
 
 			}
@@ -299,7 +311,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 489.0, 372.0, 107.0, 22.0 ],
-					"text" : "154. 213. 76."
+					"text" : "63. 67. 0."
 				}
 
 			}
@@ -311,7 +323,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 298.0, 288.0, 93.0, 22.0 ],
-					"text" : "208. 46. 84."
+					"text" : "106. 24. 19."
 				}
 
 			}
@@ -413,6 +425,13 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-22", 0 ],
+					"source" : [ "obj-19", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-24", 1 ],
 					"order" : 1,
 					"source" : [ "obj-22", 0 ]
@@ -459,6 +478,14 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-19", 0 ],
+					"order" : 1,
+					"source" : [ "obj-3", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-21", 1 ],
 					"order" : 0,
 					"source" : [ "obj-3", 1 ]
@@ -483,6 +510,7 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-4", 0 ],
+					"order" : 0,
 					"source" : [ "obj-3", 0 ]
 				}
 
@@ -606,21 +634,7 @@
 				}
 
 			}
- ],
-		"dependency_cache" : [ 			{
-				"name" : "OSC-route.mxo",
-				"type" : "iLaX"
-			}
-, 			{
-				"name" : "OSC-schedule.mxo",
-				"type" : "iLaX"
-			}
-, 			{
-				"name" : "OpenSoundControl.mxo",
-				"type" : "iLaX"
-			}
- ],
-		"autosave" : 0
+ ]
 	}
 
 }

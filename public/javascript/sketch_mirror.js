@@ -3,7 +3,7 @@ let wifiName = 'sam-wifi'; // sam-wifi // 1.118
 let qrCodeImg;
 let debug = false;
 
-let socket; 
+let socket;
 
 let isActive = false;
 
@@ -18,23 +18,16 @@ function preload() {
   thisMirrorId = arg[0];
   document.title = 'Mirror ' + thisMirrorId; // change dynamically the title
 
-  if(debug){
+  if (debug) {
     console.log('thisMirrorId:', thisMirrorId/* , 'assignedMirror:', assignedMirror */);
     document.getElementById('idNumber').innerHTML = thisMirrorId;
   }
 
-  let qrCodePath;
+  const qrCodePath = '../images/' + wifiName + '/' + wifiName + '_qrcode_mirror-voice_' + thisMirrorId + '.png';
 
-  // !!!!solo per docum test with android
-  if(thisMirrorId === '1'){
-    qrCodePath = '../images/' + wifiName + '/' + wifiName + '_qrcode_note_' + thisMirrorId + '.png';
-    console.log(qrCodePath);
-  } else {
-    qrCodePath = '../images/' + wifiName + '/' + wifiName + '_qrcode_mirror-voice_' + thisMirrorId + '.png';
-  }
 
-  if(debug) {
-    console.log('loading qrcode', qrCodePath );
+  if (debug) {
+    console.log('loading qrcode', qrCodePath);
   }
 
   qrCodeImg = loadImage(qrCodePath);
@@ -47,11 +40,10 @@ function setup() {
   angleMode(DEGREES);
 }
 
-//we are using p5.js to visualise this movement data
 function draw() {
   background(255);
 
-  if ( isActive && waveform ) {
+  if (isActive && waveform) {
     fill(0);
     beginShape();
     strokeWeight(5);
@@ -62,7 +54,7 @@ function draw() {
     }
     endShape();
   } else {
-    image(qrCodeImg, width/2-qrCodeImg.width/2, height/2-qrCodeImg.height/2);
+    image(qrCodeImg, width / 2 - qrCodeImg.width / 2, height / 2 - qrCodeImg.height / 2);
   }
 }
 
@@ -83,15 +75,15 @@ function setupSocket() {
 
   socket.on("activate", (_msg) => {
     isActive = _msg;
-    console.log('mirror activation state: ', isActive );
+    console.log('mirror activation state: ', isActive);
   });
 
   socket.on("mirror", (input) => {
     if (input.assignedMirror == thisMirrorId) {
       waveform = input.waveform;
-      if(debug){
+      if (debug) {
         console.log('waveform.length: ', input.waveform.length);
       }
-    } 
+    }
   });
 }

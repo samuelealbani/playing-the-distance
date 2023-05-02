@@ -171,7 +171,6 @@ function draw() {
   if(!started){
     textSize(30)
     textAlign(CENTER);
-    /* stroke(255); */
     strokeWeight(1);
     fill(255);
     text('Touch to activate ', width / 2, height / 2 + 100);
