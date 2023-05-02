@@ -6,7 +6,7 @@ let debug = false;
 let socket; 
 
 let isActive = false;
-let isReceiving = false;
+// let isReceiving = false;
 
 let waveform;
 
@@ -66,7 +66,7 @@ function draw() {
     image(qrCodeImg, width/2-qrCodeImg.width/2, height/2-qrCodeImg.height/2);
   }
 
-  isReceiving = false;
+  // isReceiving = false;
 }
 
 
@@ -92,8 +92,10 @@ function setupSocket() {
   socket.on("mirror", (input) => {
     if (input.assignedMirror == thisMirrorId) {
       waveform = input.waveform;
-      isReceiving = true;
-      console.log(input.waveform.length);
+      //isReceiving = true;
+      if(debug){
+        console.log('waveform.length: ', input.waveform.length);
+      }
     } 
   });
 }
