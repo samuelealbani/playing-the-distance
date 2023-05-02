@@ -1,3 +1,11 @@
+// to open this page you need to visit the page:
+// https://your-ip-address:4400/webpd.html?mirror=1
+// change the value of the mirror to change the assigned 
+// projection (from 0 to 2)
+// PS
+// the qr code loaded on the mirror does contain my current IP
+// this might not work for you
+
 let patch = null
 let stream = null
 let webpdNode = null

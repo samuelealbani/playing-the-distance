@@ -30,23 +30,7 @@ let mirrorsIds = [];
 
 let mirrorToSearch;
 
-/* 
-// old import
-const open = require("open");
-const fs = require('fs');
-const OSC = require('osc-js')
-const osc = new OSC({ plugin: new OSC.WebsocketServerPlugin() })
-osc.open() // listening on 'ws://localhost:8080'
-const express = require("express");
-const app = express();
-const https = require('https');
-const server = https.createServer(options, app);//use certificates for https
-const { Server } = require("socket.io");
-const io = new Server(server);
- */
-
 const number_of_voices = 3; // make it global for client or send it
-
 
 let staticServerPort = "4400";
 let printEveryMessage = false;

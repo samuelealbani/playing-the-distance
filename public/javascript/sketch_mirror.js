@@ -1,3 +1,6 @@
+// the qr code loaded does contain my current IP
+// this might not work for you
+
 let wifiName = 'sam-wifi'; // sam-wifi // 1.118
 
 let qrCodeImg;
