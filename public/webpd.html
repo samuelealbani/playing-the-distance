@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="javascript/libs/p5.js"></script>
+        <script src="javascript/libs/addons/p5.sound.js"></script>
+        <title>Playing Voice</title>
+        <style>
+            #start {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            #loading {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        </style>
+    </head>
+    <body>
+        <button id="start"> Start </button>
+        <div id="loading"> Loading ... </div>
+        <script src="javascript/libs/webpd-runtime.js"></script>
+        <script src="javascript/sketch_webpd.js"></script>
+    </body>
+</html>

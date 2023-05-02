@@ -28,6 +28,8 @@ const os = require("os");
 let voiceIds = [];
 let mirrorsIds = [];
 
+let mirrorToSearch;
+
 /* 
 // old import
 const open = require("open");
@@ -43,7 +45,7 @@ const { Server } = require("socket.io");
 const io = new Server(server);
  */
 
-
+const number_of_voices = 3; // make it global for client or send it
 
 
 let staticServerPort = "4400";
@@ -53,8 +55,8 @@ let oscRecievePort = "9129";
 let sendIP = "127.0.0.1";//localhost
 let oscSendPort = "9130";
 
-const freqIntervals = [1, 2, 3, 5, 7, 2.05, 3.05];
-let carrierFreq = 384;
+const freqIntervals = [1, 1.33, 1.779, 5, 7];
+let carrierFreq = 330;
 
 // Tell our Node.js Server to host our P5.JS sketch from the public folder.
 app.use(express.static("public"));
@@ -62,7 +64,10 @@ app.use(express.static("public"));
 // Setup Our Node.js server to listen to connections from chrome, and open chrome when it is ready
 server.listen(staticServerPort, () => {
   console.log(`listening on *: ${staticServerPort}`);
-  // open("https://127.0.0.1:" + staticServerPort);
+  for(let i = 0; i < number_of_voices; i++){
+    open("https://127.0.0.1:" + staticServerPort +'/mirror.html?id=' + i); // open three browsers try pos and size
+    console.log(i);
+  }
 });
 
 // reassignHarmonics();
@@ -74,17 +79,33 @@ io.on("connection", (socket) => {
   // Code to run every time we get a message from front-end P5.JS
   socket.on("identification", (res) => {
 
-    if (res[0]) {
-      console.log(socket.id, "is a voice");
-      voiceIds.push(socket.id);
-      reassignHarmonics();
+    if (res[0]) { // is a voice
+      console.log('\nres: ', res);
+      console.log(socket.id, "is a voice", 'res[1]', res[1], 'res[2]', res[2]);
+      voiceIds.push([socket.id, res[2]]);
+      socket.emit("setHarmonic", freqIntervals/* [index] */);
+      socket.emit("setFrequency", carrierFreq);
+
+      mirrorToSearch = res[2];
+      console.log('searching mirror', mirrorToSearch);
+      if (mirrorsIds.length > 0) {
+        let index = mirrorsIds.findIndex(findIndexByMirror);
+        console.log('index mirror', index);
+        let id = mirrorsIds[index];
+        console.log('sending to id: ', id);
+        // console.log('id: ', id, ' mirror: ', mirrorToSearch);
+
+        io.to(id).emit('activate', true) // send to a specific id
+      } else {
+        console.log('!mirrorsIds.length > 0', mirrorsIds.length);
+      }
+
+      //reassignHarmonics();
     } else {
       mirrorsIds.push([socket.id, res[1]]); // store the socket.id with the number of mirror
-      console.log(socket.id, "is a mirror", res[1]);
+      console.log(socket.id, "is a mirror", res[1], 'mirrorsIds: ', mirrorsIds);
     }
   });
-
-
 
   /*   let message = new OSC.Message("/distances/noses");
     message.add(34);
@@ -92,19 +113,64 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("disconnected", socket.id);
-    if (voiceIds.includes(socket.id)) {
-      const index = voiceIds.indexOf(socket.id);
-      if (index !== -1) {
-        voiceIds.splice(index, 1);
+    for (let i = 0; i < voiceIds.length; i++) {
+      // console.log('is the voice id');
+      if (voiceIds[i].includes(socket.id)) {
+        console.log('is the voice id: ', socket.id, 'assigned to mirror', voiceIds[i][1]);
+
+        /// create function activateMirror
+        mirrorToSearch = voiceIds[i][1];
+        console.log('searching mirror', mirrorToSearch);
+        if (mirrorsIds.length > 0) {
+          let index = mirrorsIds.findIndex(findIndexByMirror);
+          console.log('index mirror', index);
+          let id = mirrorsIds[index];
+          console.log('sending to id: ', id);
+          // console.log('id: ', id, ' mirror: ', mirrorToSearch);
+
+          io.to(id).emit('activate', false) // send to a specific id
+        } else {
+          console.log('!mirrorsIds.length > 0', mirrorsIds.length);
+        }
+
+        voiceIds.splice(i, 1);
+        console.log('deleted element. Now voiceIds: ', voiceIds);
       }
-      reassignHarmonics();
+      ///[end] create function activateMirror
     }
+    /*     if (voiceIds.includes(socket.id)) {
+          const index = voiceIds.indexOf(socket.id);
+          if (index !== -1) {
+            voiceIds.splice(index, 1);
+          }
+          // reassignHarmonics();
+        } */
+
+
+    for (let i = 0; i < mirrorsIds.length; i++) {
+      if (mirrorsIds[i].includes(socket.id)) {
+        console.log('is the mirror id: ', socket.id);
+        mirrorsIds.splice(i, 1);
+        console.log('deleted element. Now mirrorsIds: ', mirrorsIds);
+      }
+    }
+
+
+    if (mirrorsIds.includes(socket.id)) {
+      const index = mirrorsIds.indexOf(socket.id);
+      if (index !== -1) {
+        mirrorsIds.splice(index, 1);
+      }
+      console.log('deleted from mirrorIds array');
+      // reassignHarmonics();
+    }
+
 
   });
 
   // Code to run every time we get a message from front-end P5.JS
   socket.on("data", (data) => {
-
+    // console.log('udp');
     //do something
     // socket.broadcast.emit('mirror', data);//broadcast.emit means send to everyone but the sender
     //send it via OSC to another port, device or software (e.g. max msp)
@@ -122,19 +188,16 @@ io.on("connection", (socket) => {
   socket.on("waveform", (data) => {
 
     // console.log(data.assignedMirror);
-
-
-    let mirrorToSearch = data.assignedMirror;
-    function findIdByMirror(pair) {
-      return pair[1] === mirrorToSearch;
-    }
+    mirrorToSearch = data.assignedMirror;
+    // function findIdByMirror(pair) {
+    //   return pair[1] === mirrorToSearch;
+    // }
     if (mirrorsIds.length > 0) {
-      let index = mirrorsIds.findIndex(findIdByMirror);
-      let id = mirrorsIds[index][0];
+      let index = mirrorsIds.findIndex(findIndexByMirror);
+      let id = mirrorsIds[index];
       // console.log('id: ', id, ' mirror: ', mirrorToSearch);
 
-      io.to(/*' socket#id' */ id).emit('mirror', data) // send to a specific id
-
+      io.to(id).emit('mirror', data) // send to a specific id
     }
 
     //do something
@@ -152,6 +215,13 @@ io.on("connection", (socket) => {
 
 });
 
+function findIndexByMirror(pair) {
+  return pair[1] === mirrorToSearch;
+}
+
+function findIndexById(pair, _id) {
+  return pair[0] === _id;
+}
 
 function getIPAddresses() {
   let interfaces = os.networkInterfaces(),
@@ -216,7 +286,7 @@ function reassignHarmonics() {
       console.log(socket.id, 'yes is a voice', 'index voice: ', voiceIds.indexOf(socket.id));
       console.log(index + '.', 'key:', key, 'socket.id', socket.id, 'setHarmonic', freqIntervals[index]);
 
-      socket.emit("setHarmonic", freqIntervals[index]);
+      socket.emit("setHarmonic", freqIntervals/* [index] */);
       socket.emit("setFrequency", carrierFreq);
     } else {
       console.log(socket.id, 'no is a mirror');
@@ -237,6 +307,10 @@ function reassignHarmonics() {
   //   socket.emit("setFrequency", carrierFreq);
   //   index++;
   // } 
+
+}
+
+function activateMirror() {
 
 }
 
